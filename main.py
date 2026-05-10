@@ -12,6 +12,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Налаштування безпеки
 SECRET_KEY = "super-secret-key-change-it-later" # Потім зміним на випадковий
@@ -22,14 +24,26 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # Токен на тиждень
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# База даних
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# 1. Отримуємо URL бази даних з налаштувань Render
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+# Render іноді дає префікс postgres://, але SQLAlchemy вимагає postgresql://
+if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# 2. Створюємо двигун з підтримкою SSL (обов'язково для Render)
+# check_same_thread потрібен тільки для SQLite, для Postgres його видаляємо
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"sslmode": "require"} if SQLALCHEMY_DATABASE_URL and "localhost" not in SQLALCHEMY_DATABASE_URL else {}
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+def init_db():
+    # Ця команда створить таблиці в PostgreSQL автоматично
+    Base.metadata.create_all(bind=engine)
 
 # Моделі БД
 class User(Base):
