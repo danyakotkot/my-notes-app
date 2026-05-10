@@ -1,40 +1,58 @@
 import flet as ft
 import requests
 
-# Замінимо це на URL твого сервера пізніше
-API_URL = "http://127.0.0.1:8000" 
+# Локальна адреса сервера
+API_URL = "http://192.168.0.122:8000" # Твій IP тут 
 
 def main(page: ft.Page):
     page.title = "Мій Нотатник Mobile"
-    page.theme_mode = ft.ThemeMode.DARK # Відразу робимо темну тему
+    page.theme_mode = ft.ThemeMode.DARK
     
-    notes_list = ft.ListView(expand=True, spacing=10, padding=20)
+    # Список для нотаток
+    notes_list = ft.ListView(expand=True, spacing=10)
 
-    def load_notes():
+    def load_notes(e=None):
         try:
-            response = requests.get(f"{API_URL}/notes")
-            data = response.json()
+            # Спроба отримати дані з сервера
+            r = requests.get(f"{API_URL}/notes", timeout=2)
             notes_list.controls.clear()
-            for note in data["notes"]:
-                notes_list.controls.add(
-                    ft.ListTile(
-                        title=ft.Text(note["title"]),
-                        subtitle=ft.Text(note["content"][:50] + "..."),
-                        on_click=lambda _: print(f"Відкрито: {note['title']}")
+            
+            if r.status_code == 200:
+                data = r.json()
+                for n in data["notes"]:
+                    # Додаємо просту картку з текстом
+                    notes_list.controls.append(
+                        ft.Container(
+                            content=ft.Text(n["title"], size=18, weight="bold"),
+                            padding=15,
+                            bgcolor="#333333",
+                            border_radius=10
+                        )
                     )
-                )
+            else:
+                notes_list.controls.append(ft.Text("Помилка сервера", color="orange"))
+            
             page.update()
-        except:
-            notes_list.controls.add(ft.Text("Помилка підключення до сервера"))
+            
+        except Exception as ex:
+            notes_list.controls.clear()
+            notes_list.controls.append(ft.Text(f"Сервер офлайн (запусти run_app.py)", color="red"))
             page.update()
 
-    # Кнопка оновлення
+    # Створюємо кнопку без іконки (просто текст), щоб точно не було помилок
+    refresh_btn = ft.ElevatedButton("Оновити список", on_click=load_notes)
+
+    # Додаємо елементи на сторінку
     page.add(
-        ft.AppBar(title=ft.Text("Мої Нотатки"), bgcolor=ft.Colors.SURFACE_VARIANT),
-        notes_list,
-        ft.FloatingActionButton(icon=ft.Icons.REFRESH, on_click=lambda _: load_notes())
+        ft.Text("Мої Нотатки", size=25, weight="bold"),
+        refresh_btn,
+        notes_list
     )
     
+    # Автоматичне завантаження при старті
     load_notes()
 
-ft.app(target=main)
+if __name__ == "__main__":
+    # Спробуємо запустити як веб-сервер напряму
+    ft.app(target=main, port=8080, host="0.0.0.0")
+    

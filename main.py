@@ -2,17 +2,39 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
+import os
+
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # Дозволяє запити з будь-яких адрес (включаючи твій телефон)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
+# 1. Монтуємо папку static (щоб іконка була доступна)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 2. Маршрут для самого маніфесту
+@app.get("/manifest.json")
+async def get_manifest():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    manifest_path = os.path.join(current_dir, "static", "manifest.json")
+    
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path)
+    else:
+        # Якщо файла немає, ми хоча б побачимо помилку в терміналі
+        print(f"ERROR: Manifest not found at {manifest_path}")
+        return {"error": "File not found"}
+    
 DB_NAME = "notes.db"
 
 # Функція для ініціалізації бази даних
@@ -35,6 +57,7 @@ init_db()
 class Note(BaseModel):
     title: str
     content: str
+
 
 # 1. Отримати всі нотатки
 @app.get("/notes")
@@ -75,3 +98,8 @@ def delete_note(title: str):
     conn.commit()
     conn.close()
     return {"status": "success"}
+
+@app.get("/")
+async def read_index():
+    # Повертає твій файл index.html, коли ти заходиш на головну сторінку
+    return FileResponse('index.html')

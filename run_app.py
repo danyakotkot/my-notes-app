@@ -18,7 +18,7 @@ def resource_path(relative_path):
 # Функція для фонового запуску сервера
 def start_server():
     # log_level="critical" прибирає зайвий текст із терміналу
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="critical")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == '__main__':
     print("Запускаємо Нотатник...")
@@ -31,17 +31,10 @@ if __name__ == '__main__':
     time.sleep(0.5)
 
     # 2. Формуємо шлях до нашого HTML-файлу
-    html_file = resource_path("index.html")
-    html_path = f"file://{html_file}"
+html_path = "http://127.0.0.1:8000"
 
     # 3. Створюємо вікно програми
-    window = webview.create_window(
-        title='Мій Нотатник', 
-        url=html_path, 
-        width=1000, 
-        height=700,
-        background_color='#f4f4f9'
-    )
+window = webview.create_window('Мій Нотатник', html_path)
 
     # 4. Запускаємо вікно!
-    webview.start()
+webview.start()
