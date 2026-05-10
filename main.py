@@ -81,9 +81,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None: raise HTTPException(status_code=401)
     return user
 
-# Маршрути Авторизації
+# Додай цей клас перед маршрутами
+class UserAuth(BaseModel):
+    username: str
+    password: str
+
+# Оновлені маршрути
 @app.post("/register")
-def register(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def register(user: UserAuth, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user: raise HTTPException(status_code=400, detail="Username taken")
     hashed_pwd = pwd_context.hash(user.password)
@@ -93,11 +98,11 @@ def register(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
     return {"msg": "User created"}
 
 @app.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == form_data.username).first()
-    if not user or not pwd_context.verify(form_data.password, user.hashed_password):
+async def login(user: UserAuth, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.username == user.username).first()
+    if not db_user or not pwd_context.verify(user.password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Wrong username or password")
-    access_token = create_access_token(data={"sub": user.username})
+    access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Маршрути Нотаток

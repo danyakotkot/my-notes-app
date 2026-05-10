@@ -81,31 +81,30 @@
             document.getElementById('auth-toggle').innerText = isRegisterMode ? "Вже є акаунт? Увійти" : "Немає акаунту? Реєстрація";
         }
 
-        async function handleAuth() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const path = isRegisterMode ? "/register" : "/token";
+    async function handleAuth() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const path = isRegisterMode ? "/register" : "/token";
 
-            const formData = new FormData();
-            formData.append('username', user);
-            formData.append('password', pass);
+    const res = await fetch(API_URL + path, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass }) 
+    });
+    const data = await res.json();
 
-            const res = await fetch(API_URL + path, { method: 'POST', body: formData });
-            const data = await res.json();
-
-            if (res.ok) {
-                if (isRegisterMode) {
-                    alert("Успішно! Тепер увійдіть.");
-                    toggleAuthMode();
-                } else {
-                    localStorage.setItem('token', data.access_token);
-                    showMain();
-                }
-            } else {
-                alert(data.detail || "Помилка");
-            }
+    if (res.ok) {
+        if (isRegisterMode) {
+            alert("Успішно! Тепер увійдіть.");
+            toggleAuthMode();
+        } else {
+            localStorage.setItem('token', data.access_token);
+            showMain();
         }
-
+    } else {
+        alert(data.detail || "Помилка");
+    }
+}
         function showMain() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-ui').style.display = 'flex';
