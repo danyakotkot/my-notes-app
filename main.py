@@ -14,6 +14,9 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from fastapi import UploadFile, File
+import shutil
+
 
 # Налаштування безпеки
 SECRET_KEY = "super-secret-key-change-it-later" # Потім зміним на випадковий
@@ -148,6 +151,18 @@ def delete_note(note_id: int, current_user: User = Depends(get_current_user), db
         db.delete(note)
         db.commit()
     return {"status": "ok"}
+
+@app.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    # На Render краще зберігати фото у хмарі (наприклад, Cloudinary), 
+    # але для тесту створимо папку uploads
+    upload_path = f"static/uploads/{file.filename}"
+    os.makedirs("static/uploads", exist_ok=True)
+    
+    with open(upload_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"url": f"/static/uploads/{file.filename}"}
 
 # Статика та PWA
 app.mount("/static", StaticFiles(directory="static"), name="static")

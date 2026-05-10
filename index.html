@@ -152,6 +152,7 @@
             <button id="photo-btn" class="btn btn-photo" onclick="takePhoto()">
                 <i class="fas fa-camera"></i> Фото
             </button>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
         </div>
     </div>
 </div>
@@ -238,6 +239,49 @@
             loadNotes();
             newNote();
         }
+
+        const photoBtn = document.getElementById('photo-btn');
+const imageInput = document.getElementById('imageInput');
+
+// 1. При кліку на кнопку "Фото" відкриваємо вікно вибору файлу (або камеру на телефоні)
+photoBtn.onclick = function() {
+    imageInput.click();
+};
+
+// 2. Коли фото вибрано
+imageInput.onchange = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Тут ми можемо або одразу завантажити на сервер, 
+        // або вставити посилання в текст нотатки
+        console.log("Фото вибрано:", file.name);
+        uploadImage(file); // Функція, яку ми напишемо далі
+    }
+};
+
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("/upload-image", {
+            method: "POST",
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Вставляємо шлях до картинки в Markdown форматі в текст нотатки
+            const content = document.getElementById('note-content');
+            content.value += `\n![image](${data.url})\n`;
+            alert("Фото завантажено!");
+        }
+    } catch (error) {
+        console.error("Помилка завантаження:", error);
+        alert("Не вдалося завантажити фото");
+    }
+}
+
     </script>
 </body>
 </html>
