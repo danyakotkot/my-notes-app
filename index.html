@@ -6,6 +6,7 @@
     <title>Нотатки</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
     :root { 
         --bg: #121212; 
@@ -100,7 +101,8 @@
             border-right: none; 
             border-bottom: 1px solid #333; 
         }
-
+        .editor-container { flex-direction: column; }
+        .preview-area { display: none; }
         .editor { 
             height: 65%; 
             padding: 15px; 
@@ -112,6 +114,30 @@
         
         .btn { padding: 12px 5px; font-size: 12px; }
     }
+
+.editor-container {
+    display: flex;
+    flex: 1;
+    gap: 15px;
+    min-height: 0;
+}
+
+#note-content, .preview-area {
+    flex: 1;
+    height: 100%;
+    background: var(--input-bg);
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.preview-area img {
+    max-width: 100%; /* Щоб картинки не вилазили за межі */
+    border-radius: 10px;
+}
+
+
 </style>
 </head>
 <body>
@@ -140,7 +166,10 @@
 
     <div class="editor">
         <input type="text" id="note-title" placeholder="Заголовок...">
-        <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
+    <div class="editor-container">
+        <textarea id="note-content" placeholder="Пиши Markdown тут..."></textarea>
+        <div id="note-preview" class="preview-area"></div>
+    </div>
         
         <div class="button-group">
             <button id="save-btn" class="btn btn-save" onclick="saveNote()">
@@ -280,8 +309,33 @@ async function uploadImage(file) {
         console.error("Помилка завантаження:", error);
         alert("Не вдалося завантажити фото");
     }
+    // Усередині функції uploadImage після вставки тексту:
+content.value += `\n![image](${data.url})\n`;
+updatePreview(); // Щоб картинка з'явилася миттєво без перезавантаження
+}
+            // Функція для оновлення прев'ю
+function updatePreview() {
+    const contentInput = document.getElementById('note-content');
+    const previewArea = document.getElementById('note-preview');
+    
+    if (contentInput && previewArea) {
+        // Використовуємо бібліотеку marked для перетворення тексту в HTML
+        previewArea.innerHTML = marked.parse(contentInput.value);
+    }
 }
 
+// Слухаємо введення тексту в реальному часі
+document.getElementById('note-content').addEventListener('input', updatePreview);
+
+
+function selectNote(id) {
+    // ... твій код, який отримує дані нотатки ...
+    document.getElementById('note-title').value = note.title;
+    document.getElementById('note-content').value = note.content;
+    
+    // ДОДАЙ ЦЕЙ РЯДОК, щоб прев'ю оновилося при виборі нотатки
+    updatePreview(); 
+}
     </script>
 </body>
 </html>
