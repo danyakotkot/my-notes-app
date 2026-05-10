@@ -91,6 +91,21 @@
 
     .logout-btn { color: var(--danger); cursor: pointer; font-size: 1.2rem; }
 
+.btn-toggle {
+    background: var(--input-bg);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.btn-toggle.active {
+    background: var(--accent);
+    color: white;
+}
+
     /* Адаптивність для мобільних пристроїв */
     @media (max-width: 768px) {
         .app-container { flex-direction: column; }
@@ -164,11 +179,15 @@
         <div id="notes-list" class="notes-list"></div>
     </div>
 
-    <div class="editor">
+  <div class="editor">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
         <input type="text" id="note-title" placeholder="Заголовок...">
-    <div class="editor-container">
+        <button id="toggle-view" class="btn-toggle" onclick="toggleMode()">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div> <div class="editor-container">
         <textarea id="note-content" placeholder="Пиши Markdown тут..."></textarea>
-        <div id="note-preview" class="preview-area"></div>
+        <div id="note-preview" class="preview-area" style="display: none;"></div>
     </div>
         
         <div class="button-group">
@@ -319,8 +338,9 @@ function updatePreview() {
     const previewArea = document.getElementById('note-preview');
     
     if (contentInput && previewArea) {
-        // Використовуємо бібліотеку marked для перетворення тексту в HTML
-        previewArea.innerHTML = marked.parse(contentInput.value);
+        // Отримуємо текст і конвертуємо його в HTML
+        const rawText = contentInput.value;
+        previewArea.innerHTML = marked.parse(rawText);
     }
 }
 
@@ -328,14 +348,39 @@ function updatePreview() {
 document.getElementById('note-content').addEventListener('input', updatePreview);
 
 
-function selectNote(id) {
-    // ... твій код, який отримує дані нотатки ...
-    document.getElementById('note-title').value = note.title;
-    document.getElementById('note-content').value = note.content;
+async function selectNote(id) {
+    // ... твій існуючий код, який отримує дані (fetch) ...
     
-    // ДОДАЙ ЦЕЙ РЯДОК, щоб прев'ю оновилося при виборі нотатки
+    document.getElementById('note-title').value = data.title;
+    document.getElementById('note-content').value = data.content;
+    // Оновлювати прев'ю щоразу, коли щось друкуєш у полі content
+
+    // ЦЕЙ РЯДОК МАЄ БУТИ ТУТ:
     updatePreview(); 
 }
+
+function toggleMode() {
+    const editor = document.getElementById('note-content');
+    const preview = document.getElementById('note-preview');
+    const btn = document.getElementById('toggle-view');
+
+    if (preview.style.display === 'none') {
+        // Вмикаємо режим перегляду
+        preview.style.display = 'block';
+        editor.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-edit"></i>'; // Міняємо око на олівець
+        btn.classList.add('active');
+        updatePreview(); // Оновлюємо вміст перед показом
+    } else {
+        // Повертаємося до редагування
+        preview.style.display = 'none';
+        editor.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-eye"></i>'; // Міняємо назад на око
+        btn.classList.remove('active');
+    }
+}
+
+
     </script>
 </body>
 </html>
