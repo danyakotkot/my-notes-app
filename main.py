@@ -18,7 +18,8 @@ SECRET_KEY = "super-secret-key-change-it-later" # Потім зміним на �
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # Токен на тиждень
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Замість ["bcrypt"] використовуємо "pbkdf2_sha256"
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # База даних
@@ -86,12 +87,14 @@ class UserAuth(BaseModel):
     username: str
     password: str
 
-# Оновлені маршрути
 @app.post("/register")
 def register(user: UserAuth, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user: raise HTTPException(status_code=400, detail="Username taken")
-    hashed_pwd = pwd_context.hash(user.password)
+    
+    # Використовуємо pbkdf2_sha256 через наш pwd_context
+    hashed_pwd = pwd_context.hash(str(user.password))
+    
     new_user = User(username=user.username, hashed_password=hashed_pwd)
     db.add(new_user)
     db.commit()
@@ -100,8 +103,11 @@ def register(user: UserAuth, db: Session = Depends(get_db)):
 @app.post("/token")
 async def login(user: UserAuth, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
-    if not db_user or not pwd_context.verify(user.password, db_user.hashed_password):
+    
+    # Перевірка через pbkdf2_sha256
+    if not db_user or not pwd_context.verify(str(user.password), db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Wrong username or password")
+    
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
