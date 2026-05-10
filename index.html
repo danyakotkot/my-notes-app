@@ -7,144 +7,75 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-    :root { 
-        --bg: #121212; 
-        --panel: #1e1e1e; 
-        --text: #e0e0e0; 
-        --accent: #2ecc71; 
-        --danger: #e74c3c;
-        --input-bg: #252525;
-        --sidebar-width: 300px;
-    }
+        :root { 
+            --bg: #121212; --panel: #1e1e1e; --text: #e0e0e0; 
+            --accent: #2ecc71; --danger: #e74c3c; --input-bg: #252525;
+        }
 
-    body { 
-        font-family: 'Segoe UI', Roboto, sans-serif; 
-        background: var(--bg); 
-        color: var(--text); 
-        margin: 0; 
-        display: flex; 
-        height: 100vh; 
-        overflow: hidden;
-    }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
 
-    /* Ліва панель */
-    .sidebar { 
-        width: var(--sidebar-width); 
-        background: var(--panel); 
-        display: flex; 
-        flex-direction: column; 
-        border-right: 1px solid #333;
-    }
+        /* Екран авторизації */
+        #auth-screen { 
+            position: fixed; inset: 0; background: var(--bg); 
+            display: flex; align-items: center; justify-content: center; z-index: 9999; 
+        }
+        .auth-card { 
+            background: var(--panel); padding: 40px; border-radius: 20px; 
+            width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .auth-card input { 
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; 
+            border: 1px solid #333; background: var(--input-bg); color: white; box-sizing: border-box; 
+        }
 
-    .sidebar-header { 
-        padding: 20px; 
-        font-size: 1.4rem;
-        font-weight: bold; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        background: #1a1a1a;
-    }
+        /* Головний інтерфейс */
+        #main-ui { display: none; height: 100vh; width: 100%; }
+        
+        .sidebar { 
+            width: 300px; background: var(--panel); display: flex; 
+            flex-direction: column; border-right: 1px solid #333; 
+        }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; }
+        
+        .notes-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .note-item { 
+            padding: 15px; margin-bottom: 8px; border-radius: 10px; 
+            background: var(--input-bg); cursor: pointer; transition: 0.2s;
+            border-left: 4px solid transparent; overflow: hidden; text-overflow: ellipsis;
+        }
+        .note-item:hover { background: #333; border-left-color: var(--accent); }
 
-    .notes-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
-    }
+        .editor { flex: 1; display: flex; flex-direction: column; padding: 30px; gap: 20px; }
+        #note-title { 
+            background: transparent; border: none; color: white; 
+            font-size: 2rem; font-weight: bold; outline: none; 
+        }
+        #note-content { 
+            flex: 1; background: var(--input-bg); border: 1px solid #333; 
+            border-radius: 15px; color: #ccc; padding: 20px; font-size: 1.1rem; 
+            outline: none; resize: none; line-height: 1.6;
+        }
 
-    .note-item { 
-        padding: 15px; 
-        margin-bottom: 8px;
-        border-radius: 8px; 
-        background: var(--input-bg); 
-        cursor: pointer; 
-        transition: 0.2s;
-        border-left: 4px solid transparent;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .note-item:hover { background: #333; border-left-color: var(--accent); }
+        /* Кнопки */
+        .btn {
+            padding: 15px; border-radius: 10px; border: none; font-weight: bold;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; width: 100%; }
+        .btn-save { background: var(--accent); color: white; flex: 1; }
+        .btn-delete { background: var(--danger); color: white; flex: 1; }
+        .btn-link { background: none; color: #888; margin-top: 20px; width: 100%; }
+        .btn-new { background: #3498db; color: white; margin: 10px 15px; }
 
-    /* Редактор */
-    .editor { 
-        flex: 1; 
-        display: flex; 
-        flex-direction: column; 
-        padding: 40px;
-        background: var(--bg);
-    }
+        .controls { display: flex; gap: 15px; }
+        .logout-btn { color: var(--danger); cursor: pointer; }
 
-    #note-title { 
-        background: transparent; 
-        border: none; 
-        color: white; 
-        font-size: 2.2rem; 
-        font-weight: bold;
-        outline: none;
-        margin-bottom: 20px;
-        width: 100%;
-    }
-
-    #note-content { 
-        flex: 1; 
-        background: var(--input-bg); 
-        border: 1px solid #333; 
-        border-radius: 12px;
-        color: #ccc; 
-        padding: 25px; 
-        font-size: 1.2rem; 
-        line-height: 1.6;
-        outline: none; 
-        resize: none; 
-    }
-
-    /* Кнопки */
-    .controls { 
-        display: flex; 
-        gap: 15px; 
-        margin-top: 20px;
-    }
-
-    .btn {
-        flex: 1;
-        padding: 16px;
-        border-radius: 10px;
-        border: none;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: 0.2s;
-    }
-
-    .btn-save { background: var(--accent); color: white; }
-    .btn-save:hover { background: #27ae60; opacity: 0.9; }
-
-    .btn-delete { background: var(--danger); color: white; }
-    .btn-delete:hover { background: #c0392b; opacity: 0.9; }
-
-    .btn-new { 
-        background: #3498db; 
-        color: white; 
-        margin: 15px; 
-        padding: 12px;
-        border-radius: 8px;
-    }
-
-    .logout-btn { color: var(--danger); cursor: pointer; font-size: 1.2rem; }
-
-    /* Адаптивність для телефонів */
-    @media (max-width: 768px) {
-        .sidebar { width: 70px; }
-        .sidebar span, .btn-new span { display: none; }
-        .editor { padding: 15px; }
-        #note-title { font-size: 1.5rem; }
-    }
-</style>
+        @media (max-width: 600px) {
+            .sidebar { width: 70px; }
+            .sidebar span { display: none; }
+            .editor { padding: 15px; }
+        }
+    </style>
 </head>
 <body>
 
@@ -153,52 +84,38 @@
             <h2 id="auth-title">Вхід</h2>
             <input type="text" id="username" placeholder="Логін">
             <input type="password" id="password" placeholder="Пароль">
-            <button class="btn-primary" onclick="handleAuth()" id="auth-btn">Увійти</button>
-            <button class="btn-link" onclick="toggleAuthMode()" id="auth-toggle">Немає акаунту? Реєстрація</button>
+            <button class="btn btn-primary" onclick="handleAuth()" id="auth-btn">Увійти</button>
+            <button class="btn btn-link" onclick="toggleAuthMode()" id="auth-toggle">Немає акаунту? Реєстрація</button>
         </div>
     </div>
 
- <div id="main-ui">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <span>Нотатки</span>
-            <i class="fas fa-sign-out-alt logout-btn" title="Вийти" onclick="logout()"></i>
-        </div>
-        
-        <button class="btn btn-new" onclick="newNote()">
-            <i class="fas fa-plus"></i> <span>Нова нотатка</span>
-        </button>
-
-        <div id="notes-list" class="notes-list">
+    <div id="main-ui">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>Нотатки</span>
+                <i class="fas fa-sign-out-alt logout-btn" onclick="logout()"></i>
             </div>
-    </div>
-
-    <div class="editor">
-        <input type="text" id="note-title" placeholder="Заголовок...">
-        <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
-        
-        <div class="controls">
-            <button class="btn btn-save" onclick="saveNote()">
-                <i class="fas fa-save"></i> Зберегти
+            <button class="btn btn-new" onclick="newNote()">
+                <i class="fas fa-plus"></i> <span>Нова нотатка</span>
             </button>
-            <button class="btn btn-delete" onclick="deleteNote()">
-                <i class="fas fa-trash"></i> Видалити
-            </button>
+            <div id="notes-list" class="notes-list"></div>
+        </div>
+        <div class="editor">
+            <input type="text" id="note-title" placeholder="Заголовок...">
+            <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
+            <div class="controls">
+                <button class="btn btn-save" onclick="saveNote()"><i class="fas fa-save"></i> Зберегти</button>
+                <button class="btn btn-delete" onclick="deleteNote()"><i class="fas fa-trash"></i> Видалити</button>
+            </div>
         </div>
     </div>
-</div>
 
     <script>
         const API_URL = window.location.origin;
         let isRegisterMode = false;
         let currentNoteId = null;
 
-        // Перевірка токена при запуску
-        window.onload = () => {
-            if (localStorage.getItem('token')) {
-                showMain();
-            }
-        };
+        window.onload = () => { if (localStorage.getItem('token')) showMain(); };
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -207,40 +124,29 @@
             document.getElementById('auth-toggle').innerText = isRegisterMode ? "Вже є акаунт? Увійти" : "Немає акаунту? Реєстрація";
         }
 
-    async function handleAuth() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-    const path = isRegisterMode ? "/register" : "/token";
-
-    const res = await fetch(API_URL + path, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user, password: pass }) 
-    });
-    const data = await res.json();
-
-    if (res.ok) {
-        if (isRegisterMode) {
-            alert("Успішно! Тепер увійдіть.");
-            toggleAuthMode();
-        } else {
-            localStorage.setItem('token', data.access_token);
-            showMain();
+        async function handleAuth() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const path = isRegisterMode ? "/register" : "/token";
+            const res = await fetch(API_URL + path, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass }) 
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (isRegisterMode) { alert("Успішно! Увійдіть."); toggleAuthMode(); }
+                else { localStorage.setItem('token', data.access_token); showMain(); }
+            } else { alert(data.detail || "Помилка"); }
         }
-    } else {
-        alert(data.detail || "Помилка");
-    }
-}
+
         function showMain() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-ui').style.display = 'flex';
             loadNotes();
         }
 
-        function logout() {
-            localStorage.removeItem('token');
-            location.reload();
-        }
+        function logout() { localStorage.removeItem('token'); location.reload(); }
 
         async function loadNotes() {
             const res = await fetch(API_URL + "/notes", {
@@ -264,24 +170,13 @@
             document.getElementById('note-content').value = note.content;
         }
 
-        function newNote() {
-            currentNoteId = null;
-            document.getElementById('note-title').value = '';
-            document.getElementById('note-content').value = '';
-        }
+        function newNote() { currentNoteId = null; document.getElementById('note-title').value = ''; document.getElementById('note-content').value = ''; }
 
         async function saveNote() {
-            const note = {
-                title: document.getElementById('note-title').value,
-                content: document.getElementById('note-content').value
-            };
-            const method = 'POST'; // Для простоти завжди POST, бекенд створить нову
+            const note = { title: document.getElementById('note-title').value, content: document.getElementById('note-content').value };
             await fetch(API_URL + "/notes", {
-                method: method,
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
                 body: JSON.stringify(note)
             });
             loadNotes();
