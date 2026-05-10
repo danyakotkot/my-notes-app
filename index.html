@@ -159,6 +159,33 @@
     border-radius: 10px;
 }
 
+.auth-card .btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    display: block; /* Щоб була на весь рядок */
+}
+
+/* Кнопка "Реєстрація" (посилання) */
+.auth-card .btn-link {
+    background: none;
+    color: #888;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    text-decoration: underline;
+}
+
+.auth-card .btn-link:hover {
+    color: var(--accent);
+}
+
+/* Прибираємо конфлікт з загальним класом .btn */
+.auth-card .btn {
+    flex: none; /* Щоб вони не намагалися стати в один ряд як в редакторі */
+}
 
 </style>
 </head>
