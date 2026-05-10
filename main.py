@@ -1,105 +1,136 @@
-from fastapi import FastAPI, HTTPException
+import os
+from datetime import datetime, timedelta
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import sqlite3
-import os
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session, relationship
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 
+# Налаштування безпеки
+SECRET_KEY = "super-secret-key-change-it-later" # Потім зміним на випадковий
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # Токен на тиждень
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# База даних
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# Моделі БД
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    notes = relationship("Note", back_populates="owner")
+
+class Note(Base):
+    __tablename__ = "notes"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    content = Column(Text)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="notes")
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Дозволяє запити з будь-яких адрес (включаючи твій телефон)
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
-# 1. Монтуємо папку static (щоб іконка була доступна)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Допоміжні функції
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# 2. Маршрут для самого маніфесту
-@app.get("/manifest.json")
-async def get_manifest():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    manifest_path = os.path.join(current_dir, "static", "manifest.json")
-    
-    if os.path.exists(manifest_path):
-        return FileResponse(manifest_path)
-    else:
-        # Якщо файла немає, ми хоча б побачимо помилку в терміналі
-        print(f"ERROR: Manifest not found at {manifest_path}")
-        return {"error": "File not found"}
-    
-DB_NAME = "notes.db"
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Функція для ініціалізації бази даних
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    # Створюємо таблицю, якщо її ще немає
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            content TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None: raise HTTPException(status_code=401)
+    except JWTError: raise HTTPException(status_code=401)
+    user = db.query(User).filter(User.username == username).first()
+    if user is None: raise HTTPException(status_code=401)
+    return user
 
-init_db()
+# Маршрути Авторизації
+@app.post("/register")
+def register(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.username == user.username).first()
+    if db_user: raise HTTPException(status_code=400, detail="Username taken")
+    hashed_pwd = pwd_context.hash(user.password)
+    new_user = User(username=user.username, hashed_password=hashed_pwd)
+    db.add(new_user)
+    db.commit()
+    return {"msg": "User created"}
 
-class Note(BaseModel):
+@app.post("/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == form_data.username).first()
+    if not user or not pwd_context.verify(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Wrong username or password")
+    access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# Маршрути Нотаток
+@app.get("/notes")
+def get_notes(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return {"notes": db.query(Note).filter(Note.owner_id == current_user.id).all()}
+
+class NoteCreate(BaseModel):
     title: str
     content: str
 
-
-# 1. Отримати всі нотатки
-@app.get("/notes")
-def get_notes():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, title, content FROM notes")
-    rows = cursor.fetchall()
-    conn.close()
-    
-    notes = [{"id": r[0], "title": r[1], "content": r[2]} for r in rows]
-    return {"notes": notes}
-
-# 2. Створити або оновити нотатку
 @app.post("/notes")
-def create_note(note: Note):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    # Якщо нотатка з такою назвою є — оновлюємо, якщо ні — створюємо
-    cursor.execute("SELECT id FROM notes WHERE title = ?", (note.title,))
-    exists = cursor.fetchone()
-    
-    if exists:
-        cursor.execute("UPDATE notes SET content = ? WHERE title = ?", (note.content, note.title))
-    else:
-        cursor.execute("INSERT INTO notes (title, content) VALUES (?, ?)", (note.title, note.content))
-    
-    conn.commit()
-    conn.close()
-    return {"status": "success"}
+def add_note(note: NoteCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_note = Note(title=note.title, content=note.content, owner_id=current_user.id)
+    db.add(db_note)
+    db.commit()
+    return {"status": "ok"}
 
-# 3. Видалити нотатку за назвою (для простоти поки так)
-@app.delete("/notes/{title}")
-def delete_note(title: str):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM notes WHERE title = ?", (title,))
-    conn.commit()
-    conn.close()
-    return {"status": "success"}
+@app.delete("/notes/{note_id}")
+def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    note = db.query(Note).filter(Note.id == note_id, Note.owner_id == current_user.id).first()
+    if note:
+        db.delete(note)
+        db.commit()
+    return {"status": "ok"}
+
+# Статика та PWA
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/manifest.json")
+async def get_manifest():
+    return FileResponse("static/manifest.json")
 
 @app.get("/")
 async def read_index():
-    # Повертає твій файл index.html, коли ти заходиш на головну сторінку
     return FileResponse('index.html')
