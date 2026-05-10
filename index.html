@@ -101,10 +101,45 @@
         font-size: 16px !important; /* Щоб iPhone/Android не зумив при кліку */
     }
 
+    textarea {
+    flex-grow: 1;    /* Займати весь вільний простір */
+    min-height: 0;   /* Дозволяє стискатися, щоб звільнити місце кнопкам */
+    margin-bottom: 10px;
+}
+
     .note-item {
         padding: 12px; /* Більша область для натискання */
     }
 }
+
+    .button-group {
+    display: flex;
+    gap: 10px;           /* Відступ між кнопками */
+    padding: 10px;
+    background: #1e2124;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.button-group button {
+    flex: 1;             /* Кнопки будуть однакової ширини */
+    padding: 12px 5px;
+    font-size: 14px;
+    border-radius: 8px;
+    white-space: nowrap; /* Щоб текст не переносився */
+}
+
+/* Спеціально для мобільних екранів */
+@media (max-width: 480px) {
+    .button-group {
+        gap: 5px;
+    }
+    .button-group button {
+        font-size: 12px;  /* Трохи зменшуємо шрифт, щоб влізло три кнопки */
+        padding: 10px 2px;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -134,8 +169,11 @@
             <input type="text" id="note-title" placeholder="Заголовок...">
             <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
             <div class="controls">
-                <button class="btn btn-save" onclick="saveNote()"><i class="fas fa-save"></i> Зберегти</button>
-                <button class="btn btn-delete" onclick="deleteNote()"><i class="fas fa-trash"></i> Видалити</button>
+             <div class="button-group">
+    <button id="save-btn" class="btn save">💾 Зберегти</button>
+    <button id="delete-btn" class="btn delete">🗑️ Видалити</button>
+    <button id="photo-btn" class="btn photo">🖼️ Фото</button>
+</div>
             </div>
         </div>
     </div>
