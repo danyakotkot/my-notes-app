@@ -7,135 +7,112 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { 
-            --bg: #121212; --panel: #1e1e1e; --text: #e0e0e0; 
-            --accent: #2ecc71; --danger: #e74c3c; --input-bg: #252525;
-        }
+    :root { 
+        --bg: #121212; 
+        --panel: #1e1e1e; 
+        --text: #e0e0e0; 
+        --accent: #2ecc71; 
+        --danger: #e74c3c; 
+        --info: #3498db;
+        --input-bg: #252525;
+    }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+    body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
 
-        /* Екран авторизації */
-        #auth-screen { 
-            position: fixed; inset: 0; background: var(--bg); 
-            display: flex; align-items: center; justify-content: center; z-index: 9999; 
-        }
-        .auth-card { 
-            background: var(--panel); padding: 40px; border-radius: 20px; 
-            width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .auth-card input { 
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; 
-            border: 1px solid #333; background: var(--input-bg); color: white; box-sizing: border-box; 
-        }
-
-        /* Головний інтерфейс */
-        #main-ui { display: none; height: 100vh; width: 100%; }
-        
-        .sidebar { 
-            width: 300px; background: var(--panel); display: flex; 
-            flex-direction: column; border-right: 1px solid #333; 
-        }
-        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; }
-        
-        .notes-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .note-item { 
-            padding: 15px; margin-bottom: 8px; border-radius: 10px; 
-            background: var(--input-bg); cursor: pointer; transition: 0.2s;
-            border-left: 4px solid transparent; overflow: hidden; text-overflow: ellipsis;
-        }
-        .note-item:hover { background: #333; border-left-color: var(--accent); }
-
-        .editor { flex: 1; display: flex; flex-direction: column; padding: 30px; gap: 20px; }
-        #note-title { 
-            background: transparent; border: none; color: white; 
-            font-size: 2rem; font-weight: bold; outline: none; 
-        }
-        #note-content { 
-            flex: 1; background: var(--input-bg); border: 1px solid #333; 
-            border-radius: 15px; color: #ccc; padding: 20px; font-size: 1.1rem; 
-            outline: none; resize: none; line-height: 1.6;
-        }
-
-        /* Кнопки */
-        .btn {
-            padding: 15px; border-radius: 10px; border: none; font-weight: bold;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
-        }
-        .btn-primary { background: var(--accent); color: white; width: 100%; }
-        .btn-save { background: var(--accent); color: white; flex: 1; }
-        .btn-delete { background: var(--danger); color: white; flex: 1; }
-        .btn-link { background: none; color: #888; margin-top: 20px; width: 100%; }
-        .btn-new { background: #3498db; color: white; margin: 10px 15px; }
-
-        .controls { display: flex; gap: 15px; }
-        .logout-btn { color: var(--danger); cursor: pointer; }
-
-        @media (max-width: 600px) {
-            .sidebar { width: 70px; }
-            .sidebar span { display: none; }
-            .editor { padding: 15px; }
-        }
-        /* Якщо ширина екрана менша за 768px (телефони) */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column; /* Ставимо панель нотаток зверху, а текст знизу */
+    /* Головний контейнер (додай цей клас у батьківський div) */
+    .app-container {
+        display: flex;
         height: 100vh;
+        width: 100%;
     }
 
-    .sidebar {
-        width: 100% !important; /* Панель на всю ширину */
-        height: 30%; /* Обмежуємо висоту списку нотаток */
-        overflow-y: auto;
-        border-right: none;
-        border-bottom: 1px solid #333;
+    /* Екран авторизації */
+    #auth-screen { 
+        position: fixed; inset: 0; background: var(--bg); 
+        display: flex; align-items: center; justify-content: center; z-index: 9999; 
+    }
+    .auth-card { 
+        background: var(--panel); padding: 40px; border-radius: 20px; 
+        width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .auth-card input { 
+        width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; 
+        border: 1px solid #333; background: var(--input-bg); color: white; box-sizing: border-box; 
     }
 
-    .main-content {
-        width: 100% !important;
-        height: 70%;
-        padding: 10px;
+    /* Сайдбар */
+    .sidebar { 
+        width: 300px; background: var(--panel); display: flex; 
+        flex-direction: column; border-right: 1px solid #333; transition: 0.3s;
+    }
+    .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; }
+    
+    .notes-list { flex: 1; overflow-y: auto; padding: 10px; }
+    .note-item { 
+        padding: 15px; margin-bottom: 8px; border-radius: 10px; 
+        background: var(--input-bg); cursor: pointer; transition: 0.2s;
+        border-left: 4px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-item:hover { background: #333; border-left-color: var(--accent); }
+
+    /* Редактор */
+    .editor { flex: 1; display: flex; flex-direction: column; padding: 30px; gap: 15px; overflow: hidden; }
+    #note-title { 
+        background: transparent; border: none; color: white; 
+        font-size: 2rem; font-weight: bold; outline: none; width: 100%;
+    }
+    #note-content { 
+        flex: 1; background: var(--input-bg); border: 1px solid #333; 
+        border-radius: 15px; color: #ccc; padding: 20px; font-size: 1.1rem; 
+        outline: none; resize: none; line-height: 1.6; min-height: 0;
     }
 
-    /* Робимо кнопки та поля вводу зручнішими для пальців */
-    input, textarea, button {
-        font-size: 16px !important; /* Щоб iPhone/Android не зумив при кліку */
+    /* Група кнопок */
+    .button-group { 
+        display: flex; gap: 10px; width: 100%; margin-top: 5px;
     }
-.button-group {
-    display: flex;
-    gap: 10px;           /* Відступ між кнопками */
-    padding: 10px;
-    background: #1e2124;
-    width: 100%;
-    box-sizing: border-box;
-}
 
-.button-group button {
-    flex: 1;             /* Кнопки будуть однакової ширини */
-    padding: 12px 5px;
-    font-size: 14px;
-    border-radius: 8px;
-    white-space: nowrap; /* Щоб текст не переносився */
-}
+    .btn {
+        flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; 
+        gap: 8px; transition: 0.2s; color: white; font-size: 14px;
+    }
+    .btn-save { background: var(--accent); }
+    .btn-save:hover { background: #27ae60; }
+    
+    .btn-delete { background: var(--danger); }
+    .btn-delete:hover { background: #c0392b; }
+    
+    .btn-photo { background: #9b59b6; } /* Фіолетовий для фото */
+    .btn-photo:hover { background: #8e44ad; }
 
-/* Спеціально для мобільних екранів */
-@media (max-width: 480px) {
-    .button-group {
-        gap: 5px;
+    .btn-new { background: var(--info); margin: 10px 15px; }
+
+    .logout-btn { color: var(--danger); cursor: pointer; font-size: 1.2rem; }
+
+    /* Адаптивність для мобільних пристроїв */
+    @media (max-width: 768px) {
+        .app-container { flex-direction: column; }
+
+        .sidebar { 
+            width: 100% !important; 
+            height: 35%; 
+            border-right: none; 
+            border-bottom: 1px solid #333; 
+        }
+
+        .editor { 
+            height: 65%; 
+            padding: 15px; 
+        }
+
+        #note-title { font-size: 1.5rem; }
+        
+        .button-group { padding-bottom: 10px; }
+        
+        .btn { padding: 12px 5px; font-size: 12px; }
     }
-    .button-group button {
-        font-size: 12px;  /* Трохи зменшуємо шрифт, щоб влізло три кнопки */
-        padding: 10px 2px;
-    }
-}
-    .note-item {
-        padding: 12px; /* Більша область для натискання */
-    }}
-textarea {
-    flex-grow: 1;    /* Займати весь вільний простір */
-    min-height: 0;   /* Дозволяє стискатися, щоб звільнити місце кнопкам */
-    margin-bottom: 10px;
-}
-    </style>
+</style>
 </head>
 <body>
 
@@ -149,29 +126,35 @@ textarea {
         </div>
     </div>
 
-    <div id="main-ui">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <span>Нотатки</span>
-                <i class="fas fa-sign-out-alt logout-btn" onclick="logout()"></i>
-            </div>
-            <button class="btn btn-new" onclick="newNote()">
-                <i class="fas fa-plus"></i> <span>Нова нотатка</span>
-            </button>
-            <div id="notes-list" class="notes-list"></div>
+ <div id="main-ui" class="app-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <span>Нотатки</span>
+            <i class="fas fa-sign-out-alt logout-btn" onclick="logout()"></i>
         </div>
-        <div class="editor">
-            <input type="text" id="note-title" placeholder="Заголовок...">
-            <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
-            <div class="controls">
-             <div class="button-group">
-    <button id="save-btn" class="btn save">Зберегти</button>
-    <button id="delete-btn" class="btn delete"> Видалити</button>
-    <button id="photo-btn" class="btn photo">Фото</button>
-</div>
-            </div>
+        <button class="btn btn-new" onclick="newNote()">
+            <i class="fas fa-plus"></i> <span>Нова нотатка</span>
+        </button>
+        <div id="notes-list" class="notes-list"></div>
+    </div>
+
+    <div class="editor">
+        <input type="text" id="note-title" placeholder="Заголовок...">
+        <textarea id="note-content" placeholder="Ваш текст тут..."></textarea>
+        
+        <div class="button-group">
+            <button id="save-btn" class="btn btn-save" onclick="saveNote()">
+                <i class="fas fa-save"></i> Зберегти
+            </button>
+            <button id="delete-btn" class="btn btn-delete" onclick="deleteNote()">
+                <i class="fas fa-trash"></i> Видалити
+            </button>
+            <button id="photo-btn" class="btn btn-photo" onclick="takePhoto()">
+                <i class="fas fa-camera"></i> Фото
+            </button>
         </div>
     </div>
+</div>
 
     <script>
         const API_URL = window.location.origin;
