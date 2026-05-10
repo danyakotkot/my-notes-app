@@ -100,7 +100,33 @@
     input, textarea, button {
         font-size: 16px !important; /* Щоб iPhone/Android не зумив при кліку */
     }
+.button-group {
+    display: flex;
+    gap: 10px;           /* Відступ між кнопками */
+    padding: 10px;
+    background: #1e2124;
+    width: 100%;
+    box-sizing: border-box;
+}
 
+.button-group button {
+    flex: 1;             /* Кнопки будуть однакової ширини */
+    padding: 12px 5px;
+    font-size: 14px;
+    border-radius: 8px;
+    white-space: nowrap; /* Щоб текст не переносився */
+}
+
+/* Спеціально для мобільних екранів */
+@media (max-width: 480px) {
+    .button-group {
+        gap: 5px;
+    }
+    .button-group button {
+        font-size: 12px;  /* Трохи зменшуємо шрифт, щоб влізло три кнопки */
+        padding: 10px 2px;
+    }
+}
     .note-item {
         padding: 12px; /* Більша область для натискання */
     }}
