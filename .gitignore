@@ -1,0 +1,5 @@
+dist/
+build/
+*.exe
+*.db
+__pycache__/

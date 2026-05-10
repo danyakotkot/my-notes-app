@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Нотатник</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Базовий стиль для всіх кнопок */
+        button { 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    color: white !important; 
+    transition: 0.2s;
+}
+
+/* Окремі кольори для кожної кнопки */
+.btn-save { background: #007bff !important; }
+.btn-save:hover { background: #0056b3 !important; }
+
+.btn-delete { background: #e74c3c !important; }
+.btn-delete:hover { background: #c0392b !important; }
+
+.btn-new { 
+    background: #27ae60 !important; 
+    margin-bottom: 15px; 
+    width: 100%; 
+}
+.btn-new:hover { background: #219150 !important; }
+
+/* Кнопка перемикання теми */
+.theme-toggle {
+    background: transparent !important; 
+    border: 1px solid #fff !important; 
+    color: white !important;
+    margin-bottom: 10px;
+    font-size: 12px;
+    width: 100%;
+}
+.theme-toggle:hover { background: rgba(255,255,255,0.1) !important; }
+       :root {
+    --bg-color: #f0f2f5;
+    --sidebar-bg: #2c3e50;
+    --text-color: #333;
+    --editor-bg: #ffffff;
+    --note-item-bg: #34495e;
+    --border-color: #ddd;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --sidebar-bg: #111;
+    --text-color: #e0e0e0;
+    --editor-bg: #2d2d2d;
+    --note-item-bg: #333;
+    --border-color: #444;
+}
+
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; margin: 0; height: 100vh; background-color: var(--bg-color); color: var(--text-color); transition: 0.3s; }
+
+#sidebar { width: 280px; background: var(--sidebar-bg); color: white; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+.note-item { background: var(--note-item-bg); padding: 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+
+#main-container { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; gap: 15px; }
+#editor-wrapper { display: flex; flex-grow: 1; gap: 20px; }
+
+input#note-title, textarea, #preview { 
+    background: var(--editor-bg); 
+    color: var(--text-color); 
+    border: 1px solid var(--border-color); 
+    padding: 12px; border-radius: 8px; 
+}
+
+textarea { flex: 1; resize: none; font-family: 'Courier New', Courier, monospace; }
+#preview { flex: 1; border-left: 4px solid #007bff; overflow-y: auto; }
+
+.theme-toggle {
+    background: none; border: 1px solid white; color: white; padding: 5px; 
+    margin-bottom: 10px; cursor: pointer; border-radius: 4px; font-size: 12px;
+}
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+    <h2>Нотатки</h2>
+    <button class="theme-toggle" onclick="toggleTheme()">Змінити тему 🌓</button>
+    
+    <input type="text" id="search-input" placeholder="Пошук..." oninput="filterNotes()" 
+           style="padding: 8px; margin-bottom: 10px; border-radius: 4px; border: none;">
+        
+        <button class="btn-new" onclick="clearEditor()">+ Нова нотатка</button>
+        <div id="notes-list">Завантаження...</div>
+    </div>
+
+    <div id="main-container">
+        <input type="text" id="note-title" placeholder="Назва нотатки (напр. План на день)">
+        
+        <div id="editor-wrapper">
+            <textarea id="note-content" placeholder="Пиши Markdown тут... (напр. # Заголовок)" oninput="updatePreview()"></textarea>
+            
+            <div id="preview"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-save" onclick="saveNote()">Зберегти</button>
+            <button class="btn-delete" onclick="deleteNote()">Видалити</button>
+
+            <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="insertImage(this)">
+            <button type="button" onclick="document.getElementById('image-input').click()" style="background: #9b59b6 !important;">🖼️ Фото</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // Оновлення попереднього перегляду Markdown
+        function updatePreview() {
+            const content = document.getElementById("note-content").value;
+            document.getElementById("preview").innerHTML = marked.parse(content);
+        }
+
+        async function loadNotes() {
+            const response = await fetch(`${API_URL}/notes`);
+            const data = await response.json();
+            const listElement = document.getElementById("notes-list");
+            listElement.innerHTML = "";
+            
+            data.notes.forEach(note => {
+                const div = document.createElement("div");
+                div.className = "note-item";
+                // Зберігаємо заголовок та вміст у атрибутах для пошуку
+                div.setAttribute("data-title", note.title.toLowerCase());
+                div.setAttribute("data-content", note.content.toLowerCase());
+                
+                div.innerHTML = `<strong>${note.title}</strong>`;
+                div.onclick = () => {
+                    document.getElementById("note-title").value = note.title;
+                    document.getElementById("note-content").value = note.content;
+                    updatePreview();
+                };
+                listElement.appendChild(div);
+            });
+        }
+
+        async function saveNote() {
+            const title = document.getElementById("note-title").value;
+            const content = document.getElementById("note-content").value;
+            if (!title) return alert("Введи назву!");
+
+            await fetch(`${API_URL}/notes`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content })
+            });
+            loadNotes();
+            alert("Збережено!");
+        }
+
+        async function deleteNote() {
+            const title = document.getElementById("note-title").value;
+            if (!title || !confirm("Видалити?")) return;
+            await fetch(`${API_URL}/notes/${title}`, { method: "DELETE" });
+            clearEditor();
+            loadNotes();
+        }
+
+        function clearEditor() {
+            document.getElementById("note-title").value = "";
+            document.getElementById("note-content").value = "";
+            updatePreview();
+        }
+        // Функція для фільтрації списку нотаток
+        function filterNotes() {
+            const query = document.getElementById("search-input").value.toLowerCase();
+            const notes = document.querySelectorAll(".note-item");
+
+            notes.forEach(note => {
+                const title = note.getAttribute("data-title");
+                const content = note.getAttribute("data-content");
+
+                // Перевіряємо, чи є запит або в заголовку, або у вмісті
+                if (title.includes(query) || content.includes(query)) {
+                    note.style.display = "block";
+                } else {
+                    note.style.display = "none";
+                }
+            });
+        }
+
+        function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    
+    // Зберігаємо вибір користувача, щоб при перезавантаженні тема не зникала
+    const isDark = document.body.classList.contains("dark-mode");
+    localStorage.setItem("dark-theme", isDark);
+}
+
+        function insertImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Image = e.target.result;
+        const textarea = document.getElementById("note-content");
+        
+        // Формуємо Markdown-код для картинки
+        const markdownImage = `\n![зображення](${base64Image})\n`;
+        
+        // Вставляємо в текст там, де зараз курсор (або в кінець)
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + markdownImage + textarea.value.substring(end);
+        
+        updatePreview(); // Оновлюємо вікно перегляду, щоб картинка з'явилася
+    };
+    reader.readAsDataURL(file);
+}
+
+// При завантаженні сторінки перевіряємо, чи була увімкнена темна тема
+if (localStorage.getItem("dark-theme") === "true") {
+    document.body.classList.add("dark-mode");
+}
+        
+        loadNotes();
+    </script>
+</body>
+</html>
