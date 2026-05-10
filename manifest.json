@@ -1,24 +1,16 @@
 {
-  "name": "Мій Нотатник",
+  "name": "Мій кросплатформенний нотатник",
   "short_name": "Нотатки",
-  "description": "Кросплатформенний додаток для нотаток",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#1e2124",
   "theme_color": "#1e2124",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "/static/icon.png",
-      "sizes": "192x192",
+      "sizes": "1254x1254",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/static/icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

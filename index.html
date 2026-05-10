@@ -116,7 +116,7 @@ textarea { flex: 1; resize: none; font-family: 'Courier New', Courier, monospace
     </div>
 
     <script>
-        const API_URL = window.location.origin;
+       const API_URL = window.location.origin;
 
         // Оновлення попереднього перегляду Markdown
         function updatePreview() {
@@ -235,13 +235,13 @@ if (localStorage.getItem("dark-theme") === "true") {
     </script>
 
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/static/sw.js')
-        .then(reg => console.log('SW registered!', reg))
-        .catch(err => console.log('SW error', err));
-    });
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/sw.js')
+      .then(reg => console.log('SW registered!', reg))
+      .catch(err => console.log('SW error', err));
+  });
+}
 </script>
 
 </body>
