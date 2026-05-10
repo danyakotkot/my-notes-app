@@ -75,6 +75,36 @@
             .sidebar span { display: none; }
             .editor { padding: 15px; }
         }
+        /* Якщо ширина екрана менша за 768px (телефони) */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* Ставимо панель нотаток зверху, а текст знизу */
+        height: 100vh;
+    }
+
+    .sidebar {
+        width: 100% !important; /* Панель на всю ширину */
+        height: 30%; /* Обмежуємо висоту списку нотаток */
+        overflow-y: auto;
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+
+    .main-content {
+        width: 100% !important;
+        height: 70%;
+        padding: 10px;
+    }
+
+    /* Робимо кнопки та поля вводу зручнішими для пальців */
+    input, textarea, button {
+        font-size: 16px !important; /* Щоб iPhone/Android не зумив при кліку */
+    }
+
+    .note-item {
+        padding: 12px; /* Більша область для натискання */
+    }
+}
     </style>
 </head>
 <body>
