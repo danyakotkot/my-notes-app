@@ -19,7 +19,7 @@ import shutil
 
 
 # Налаштування безпеки
-SECRET_KEY = "super-secret-key-change-it-later" # Потім зміним на випадковий
+SECRET_KEY = os.getenv("SECRET_KEY", "дуже-секретний-дефолтний-ключ")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # Токен на тиждень
 
