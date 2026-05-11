@@ -400,7 +400,7 @@ document.getElementById('note-content').addEventListener('input', updatePreview)
 
 
 async function selectNote(id) {
-    currentNoteId = id; // Запам'ятовуємо, що ми вибрали саме цю нотатку
+    currentNoteId = parseInt(id); // Запам'ятовуємо, що ми вибрали саме цю нотатку
     
     const response = await fetch(`${API_URL}/notes/${id}`, {
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }

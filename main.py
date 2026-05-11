@@ -151,19 +151,27 @@ def update_note(
     db: Session = Depends(get_db), 
     current_user = Depends(get_current_user)
 ):
+    print(f"Updating note {note_id} for user {current_user.id}")
+
     # Шукаємо нотатку саме цього користувача
     db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
     
     if not db_note:
+        print("Note not found!")
         raise HTTPException(status_code=404, detail="Нотатку не знайдено")
 
     # Оновлюємо дані
     db_note.title = note_data.title
     db_note.content = note_data.content
     
-    db.commit()
-    db.refresh(db_note)
-    return db_note
+    try:
+        db.commit()
+        db.refresh(db_note)
+        return db_note
+    except Exception as e:
+        db.rollback()
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=500, detail="Database update failed")
 
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
