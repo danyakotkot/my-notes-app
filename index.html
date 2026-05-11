@@ -300,7 +300,12 @@
             document.getElementById('note-content').value = note.content;
         }
 
-        function newNote() { currentNoteId = null; document.getElementById('note-title').value = ''; document.getElementById('note-content').value = ''; }
+        function newNote() {
+    currentNoteId = null; // Обов'язково!
+    document.getElementById('note-title').value = "";
+    document.getElementById('note-content').value = "";
+    updatePreview();
+        }
 
      async function saveNote() {
     const title = document.getElementById('note-title').value;
@@ -395,20 +400,16 @@ document.getElementById('note-content').addEventListener('input', updatePreview)
 
 
 async function selectNote(id) {
-
-    const response = await fetch(`/notes/${id}`);
+    currentNoteId = id; // Запам'ятовуємо, що ми вибрали саме цю нотатку
+    
+    const response = await fetch(`${API_URL}/notes/${id}`, {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+    });
     const data = await response.json();
-
-    currentNoteId = id; // ОСЬ ЦЕЙ РЯДОК — ТЕПЕР МИ ЗНАЄМО, ЩО РЕДАГУЄМО!
-
-    // ... твій існуючий код, який отримує дані (fetch) ...
     
     document.getElementById('note-title').value = data.title;
     document.getElementById('note-content').value = data.content;
-    // Оновлювати прев'ю щоразу, коли щось друкуєш у полі content
-
-    // ЦЕЙ РЯДОК МАЄ БУТИ ТУТ:
-    updatePreview(); 
+    updatePreview();
 }
 
 function toggleMode() {
