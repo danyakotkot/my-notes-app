@@ -243,6 +243,7 @@
         const API_URL = window.location.origin;
         let isRegisterMode = false;
         let currentNoteId = null;
+        
 
         window.onload = () => { if (localStorage.getItem('token')) showMain(); };
 
@@ -301,16 +302,27 @@
 
         function newNote() { currentNoteId = null; document.getElementById('note-title').value = ''; document.getElementById('note-content').value = ''; }
 
-        async function saveNote() {
-            const note = { title: document.getElementById('note-title').value, content: document.getElementById('note-content').value };
-            await fetch(API_URL + "/notes", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-                body: JSON.stringify(note)
-            });
-            loadNotes();
-            newNote();
-        }
+     async function saveNote() {
+    const title = document.getElementById('note-title').value;
+    const content = document.getElementById('note-content').value;
+    const note = { title, content };
+
+    // Визначаємо: якщо currentNoteId є — оновлюємо (PUT), якщо немає — створюємо (POST)
+    const url = currentNoteId ? `${API_URL}/notes/${currentNoteId}` : `${API_URL}/notes`;
+    const method = currentNoteId ? 'PUT' : 'POST';
+
+    await fetch(url, {
+        method: method,
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': 'Bearer ' + localStorage.getItem('token') 
+        },
+        body: JSON.stringify(note)
+    });
+
+    loadNotes(); // Оновлюємо список зліва
+    newNote();   // Очищаємо редактор та скидаємо currentNoteId
+}
 
         async function deleteNote() {
             if (!currentNoteId) return;
@@ -383,6 +395,12 @@ document.getElementById('note-content').addEventListener('input', updatePreview)
 
 
 async function selectNote(id) {
+
+    const response = await fetch(`/notes/${id}`);
+    const data = await response.json();
+
+    currentNoteId = id; // ОСЬ ЦЕЙ РЯДОК — ТЕПЕР МИ ЗНАЄМО, ЩО РЕДАГУЄМО!
+
     // ... твій існуючий код, який отримує дані (fetch) ...
     
     document.getElementById('note-title').value = data.title;
