@@ -154,7 +154,7 @@ def update_note(
     print(f"Updating note {note_id} for user {current_user.id}")
 
     # Шукаємо нотатку саме цього користувача
-    db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    db_note = db.query(Note).filter(Note.id == note_id, Note.owner_id == current_user.id).first()
     
     if not db_note:
         print("Note not found!")
