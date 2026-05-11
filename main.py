@@ -144,6 +144,27 @@ def add_note(note: NoteCreate, current_user: User = Depends(get_current_user), d
     db.commit()
     return {"status": "ok"}
 
+@app.put("/notes/{note_id}")
+def update_note(
+    note_id: int, 
+    note_data: NoteCreate, 
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
+    # Шукаємо нотатку саме цього користувача
+    db_note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    
+    if not db_note:
+        raise HTTPException(status_code=404, detail="Нотатку не знайдено")
+
+    # Оновлюємо дані
+    db_note.title = note_data.title
+    db_note.content = note_data.content
+    
+    db.commit()
+    db.refresh(db_note)
+    return db_note
+
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     note = db.query(Note).filter(Note.id == note_id, Note.owner_id == current_user.id).first()
