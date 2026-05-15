@@ -3,437 +3,1285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Нотатки</title>
+    <title>CrossNotes</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-    :root { 
-        --bg: #121212; 
-        --panel: #1e1e1e; 
-        --text: #e0e0e0; 
-        --accent: #2ecc71; 
-        --danger: #e74c3c; 
-        --info: #3498db;
-        --input-bg: #252525;
-    }
-
-    body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
-
-    /* Головний контейнер (додай цей клас у батьківський div) */
-    .app-container {
-        display: flex;
-        height: 100vh;
-        width: 100%;
-    }
-
-    /* Екран авторизації */
-    #auth-screen { 
-        position: fixed; inset: 0; background: var(--bg); 
-        display: flex; align-items: center; justify-content: center; z-index: 9999; 
-    }
-    .auth-card { 
-        background: var(--panel); padding: 40px; border-radius: 20px; 
-        width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    .auth-card input { 
-        width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; 
-        border: 1px solid #333; background: var(--input-bg); color: white; box-sizing: border-box; 
-    }
-
-    /* Сайдбар */
-    .sidebar { 
-        width: 300px; background: var(--panel); display: flex; 
-        flex-direction: column; border-right: 1px solid #333; transition: 0.3s;
-    }
-    .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; }
-    
-    .notes-list { flex: 1; overflow-y: auto; padding: 10px; }
-    .note-item { 
-        padding: 15px; margin-bottom: 8px; border-radius: 10px; 
-        background: var(--input-bg); cursor: pointer; transition: 0.2s;
-        border-left: 4px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .note-item:hover { background: #333; border-left-color: var(--accent); }
-
-    /* Редактор */
-    .editor { flex: 1; display: flex; flex-direction: column; padding: 30px; gap: 15px; overflow: hidden; }
-    #note-title { 
-        background: transparent; border: none; color: white; 
-        font-size: 2rem; font-weight: bold; outline: none; width: 100%;
-    }
-    #note-content { 
-        flex: 1; background: var(--input-bg); border: 1px solid #333; 
-        border-radius: 15px; color: #ccc; padding: 20px; font-size: 1.1rem; 
-        outline: none; resize: none; line-height: 1.6; min-height: 0;
-    }
-
-    /* Група кнопок */
-    .button-group { 
-        display: flex; gap: 10px; width: 100%; margin-top: 5px;
-    }
-
-    .btn {
-        flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold;
-        cursor: pointer; display: flex; align-items: center; justify-content: center; 
-        gap: 8px; transition: 0.2s; color: white; font-size: 14px;
-    }
-    .btn-save { background: var(--accent); }
-    .btn-save:hover { background: #27ae60; }
-    
-    .btn-delete { background: var(--danger); }
-    .btn-delete:hover { background: #c0392b; }
-    
-    .btn-photo { background: #9b59b6; } /* Фіолетовий для фото */
-    .btn-photo:hover { background: #8e44ad; }
-
-    .btn-new {
-    background: #3498db;
-    color: white;
-    margin: 10px 15px;
-    padding: 12px; /* Зменшуємо внутрішні відступи */
-    min-height: 45px; /* Задаємо фіксовану адекватну висоту */
-    flex: none; /* Щоб вона не розтягувалася на весь вільний простір */
-}
-
-    .logout-btn { color: var(--danger); cursor: pointer; font-size: 1.2rem; }
-
-.btn-toggle {
-    background: var(--input-bg);
-    border: 1px solid #333;
-    color: var(--text);
-    padding: 10px 15px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.2rem;
-}
-
-.btn-toggle.active {
-    background: var(--accent);
-    color: white;
-}
-
-    /* Адаптивність для мобільних пристроїв */
-    @media (max-width: 768px) {
-        .app-container { flex-direction: column; }
-
-        .sidebar { 
-            width: 100% !important; 
-            height: 35%; 
-            border-right: none; 
-            border-bottom: 1px solid #333; 
-        }
-        .editor-container { flex-direction: column; }
-        .preview-area { display: none; }
-        .editor { 
-            height: 65%; 
-            padding: 15px; 
+        :root {
+            --bg: #121416;
+            --panel: #1b1f23;
+            --panel-soft: #22272d;
+            --surface: #171a1d;
+            --line: #30363d;
+            --line-strong: #46515c;
+            --text: #eceff1;
+            --muted: #98a2ad;
+            --accent: #36c275;
+            --accent-strong: #23a65d;
+            --info: #4ea1ff;
+            --warn: #d6a13d;
+            --danger: #e05d5d;
+            --radius: 8px;
         }
 
-        #note-title { font-size: 1.5rem; }
-        
-        .button-group { padding-bottom: 10px; }
-        
-        .btn { padding: 12px 5px; font-size: 12px; }
-    }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
 
-.editor-container {
-    display: flex;
-    flex: 1;
-    gap: 15px;
-    min-height: 0;
-}
+        button, input, textarea {
+            font: inherit;
+        }
 
-#note-content, .preview-area {
-    flex: 1;
-    height: 100%;
-    background: var(--input-bg);
-    border: 1px solid #333;
-    border-radius: 15px;
-    padding: 20px;
-    overflow-y: auto;
-}
+        button {
+            border: 0;
+            color: inherit;
+            cursor: pointer;
+        }
 
-.preview-area img {
-    max-width: 100%; /* Щоб картинки не вилазили за межі */
-    border-radius: 10px;
-}
+        #auth-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            z-index: 50;
+        }
 
-.auth-card .btn-primary {
-    background: var(--accent);
-    color: white;
-    width: 100%;
-    margin-top: 20px;
-    padding: 15px;
-    display: block; /* Щоб була на весь рядок */
-}
+        .auth-card {
+            width: min(380px, calc(100vw - 32px));
+            padding: 28px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+        }
 
-/* Кнопка "Реєстрація" (посилання) */
-.auth-card .btn-link {
-    background: none;
-    color: #888;
-    width: 100%;
-    margin-top: 10px;
-    font-size: 0.9rem;
-    text-decoration: underline;
-}
+        .auth-card h1 {
+            margin: 0 0 22px;
+            font-size: 1.45rem;
+            letter-spacing: 0;
+        }
 
-.auth-card .btn-link:hover {
-    color: var(--accent);
-}
+        .field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 44px;
+            margin-bottom: 12px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+        }
 
-/* Прибираємо конфлікт з загальним класом .btn */
-.auth-card .btn {
-    flex: none; /* Щоб вони не намагалися стати в один ряд як в редакторі */
-}
+        .field i { color: var(--muted); width: 16px; text-align: center; }
+        .field input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--text);
+        }
 
-</style>
+        #main-ui {
+            display: none;
+            height: 100vh;
+            min-width: 0;
+        }
+
+        .sidebar {
+            width: 318px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--line);
+            background: var(--panel);
+        }
+
+        .sidebar-header,
+        .topbar,
+        .toolbar,
+        .statusbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-header {
+            min-height: 58px;
+            padding: 0 14px;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .brand-mark {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border-radius: var(--radius);
+            background: var(--accent);
+            color: #0c1410;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .icon-btn:hover,
+        .icon-btn.active {
+            background: var(--panel-soft);
+            color: var(--text);
+        }
+
+        .sidebar-actions,
+        .search-wrap,
+        .filters,
+        .tag-cloud {
+            padding: 10px 12px 0;
+        }
+
+        .primary-action {
+            width: 100%;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: var(--radius);
+            background: var(--accent);
+            color: #08140d;
+            font-weight: 700;
+        }
+
+        .primary-action:hover { background: var(--accent-strong); color: #fff; }
+
+        .search-wrap {
+            position: relative;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 24px;
+            top: 22px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        #search-input {
+            width: 100%;
+            min-height: 40px;
+            padding: 0 12px 0 34px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            outline: 0;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .filter-btn,
+        .chip {
+            min-height: 32px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--muted);
+        }
+
+        .filter-btn.active,
+        .chip.active {
+            border-color: var(--accent);
+            color: var(--text);
+            background: rgba(54, 194, 117, 0.12);
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 112px;
+            overflow: auto;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+        }
+
+        .notes-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .note-item {
+            width: 100%;
+            display: grid;
+            gap: 7px;
+            margin-bottom: 8px;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: var(--radius);
+            background: var(--surface);
+        }
+
+        .note-item:hover {
+            border-color: var(--line-strong);
+        }
+
+        .note-item.active {
+            border-color: rgba(54, 194, 117, 0.5);
+            border-left-color: var(--accent);
+            background: var(--panel-soft);
+        }
+
+        .note-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .note-title {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 650;
+        }
+
+        .note-excerpt {
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.35;
+            max-height: 38px;
+            overflow: hidden;
+        }
+
+        .note-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .workspace {
+            flex: 1;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 285px;
+            background: var(--bg);
+        }
+
+        .editor-pane {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .topbar {
+            min-height: 58px;
+            gap: 10px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--line);
+            background: var(--surface);
+        }
+
+        #note-title {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--text);
+            font-size: 1.35rem;
+            font-weight: 750;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel);
+        }
+
+        .mode-tabs button {
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .mode-tabs button.active {
+            background: var(--panel-soft);
+            color: var(--text);
+        }
+
+        .toolbar {
+            min-height: 46px;
+            gap: 6px;
+            padding: 6px 16px;
+            border-bottom: 1px solid var(--line);
+            background: var(--panel);
+            overflow-x: auto;
+        }
+
+        .tool-btn,
+        .secondary-btn {
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 10px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .tool-btn {
+            width: 34px;
+            padding: 0;
+        }
+
+        .secondary-btn:hover,
+        .tool-btn:hover {
+            border-color: var(--line-strong);
+            background: var(--panel-soft);
+        }
+
+        .danger-btn { color: #ffd6d6; border-color: rgba(224, 93, 93, 0.45); }
+        .warn-btn { color: #ffe1a6; border-color: rgba(214, 161, 61, 0.45); }
+
+        .editor-body {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1px;
+            background: var(--line);
+        }
+
+        .editor-body.edit-only { grid-template-columns: minmax(0, 1fr); }
+        .editor-body.preview-only { grid-template-columns: minmax(0, 1fr); }
+
+        #note-content,
+        #note-preview {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            border: 0;
+            outline: 0;
+            resize: none;
+            padding: 22px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            overflow: auto;
+        }
+
+        #note-content {
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-size: 0.98rem;
+        }
+
+        #note-preview {
+            font-size: 1rem;
+        }
+
+        #note-preview h1,
+        #note-preview h2,
+        #note-preview h3 { line-height: 1.25; }
+        #note-preview blockquote {
+            margin-left: 0;
+            padding-left: 14px;
+            border-left: 3px solid var(--accent);
+            color: var(--muted);
+        }
+        #note-preview code {
+            padding: 2px 5px;
+            border-radius: 5px;
+            background: var(--panel-soft);
+        }
+        #note-preview pre {
+            padding: 14px;
+            border-radius: var(--radius);
+            overflow: auto;
+            background: var(--panel);
+        }
+        #note-preview img {
+            max-width: 100%;
+            border-radius: var(--radius);
+        }
+        #note-preview a,
+        .link-button {
+            color: #78b8ff;
+            text-decoration: none;
+        }
+        #note-preview a:hover,
+        .link-button:hover { text-decoration: underline; }
+        #note-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #note-preview th,
+        #note-preview td {
+            padding: 8px;
+            border: 1px solid var(--line);
+        }
+
+        .statusbar {
+            min-height: 36px;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 16px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            background: var(--surface);
+            font-size: 0.82rem;
+        }
+
+        .inspector {
+            min-width: 0;
+            border-left: 1px solid var(--line);
+            background: var(--panel);
+            overflow-y: auto;
+        }
+
+        .inspector-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .inspector h2 {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .stat {
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.12rem;
+        }
+
+        .stat span,
+        .empty-text {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .link-list {
+            display: grid;
+            gap: 7px;
+        }
+
+        .link-button {
+            width: 100%;
+            padding: 8px 9px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            text-align: left;
+        }
+
+        .toast {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            max-width: min(360px, calc(100vw - 36px));
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel-soft);
+            color: var(--text);
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: 0.18s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1000px) {
+            .workspace { grid-template-columns: minmax(0, 1fr); }
+            .inspector { display: none; }
+        }
+
+        @media (max-width: 760px) {
+            body { overflow: auto; }
+            #main-ui {
+                height: auto;
+                min-height: 100vh;
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 42vh;
+                min-width: 0;
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .workspace { min-height: 58vh; }
+            .editor-pane { height: 58vh; }
+            .topbar {
+                flex-wrap: wrap;
+                height: auto;
+                padding: 10px 12px;
+            }
+            #note-title {
+                flex-basis: 100%;
+                font-size: 1.1rem;
+            }
+            .toolbar { padding: 6px 12px; }
+            .editor-body { grid-template-columns: minmax(0, 1fr); }
+            .editor-body.split #note-preview { display: none; }
+            .statusbar { flex-wrap: wrap; padding: 8px 12px; }
+        }
+    </style>
 </head>
 <body>
-
     <div id="auth-screen">
-        <div class="auth-card">
-            <h2 id="auth-title">Вхід</h2>
-            <input type="text" id="username" placeholder="Логін">
-            <input type="password" id="password" placeholder="Пароль">
-            <button class="btn btn-primary" onclick="handleAuth()" id="auth-btn">Увійти</button>
-            <button class="btn btn-link" onclick="toggleAuthMode()" id="auth-toggle">Немає акаунту? Реєстрація</button>
-        </div>
+        <form class="auth-card" onsubmit="handleAuth(event)">
+            <h1 id="auth-title">Вхід</h1>
+            <label class="field">
+                <i class="fas fa-user"></i>
+                <input type="text" id="username" placeholder="Логін" autocomplete="username" required>
+            </label>
+            <label class="field">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Пароль" autocomplete="current-password" required>
+            </label>
+            <button class="primary-action" type="submit" id="auth-btn">Увійти</button>
+            <button class="secondary-btn" type="button" onclick="toggleAuthMode()" id="auth-toggle" style="width: 100%; margin-top: 10px;">Створити акаунт</button>
+        </form>
     </div>
 
- <div id="main-ui" class="app-container">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <span>Нотатки</span>
-            <i class="fas fa-sign-out-alt logout-btn" onclick="logout()"></i>
-        </div>
-        <button class="btn btn-new" onclick="newNote()">
-            <i class="fas fa-plus"></i> <span>Нова нотатка</span>
-        </button>
-        <div id="notes-list" class="notes-list"></div>
-    </div>
+    <main id="main-ui">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+                    <span>CrossNotes</span>
+                </div>
+                <button class="icon-btn" onclick="logout()" title="Вийти" aria-label="Вийти">
+                    <i class="fas fa-right-from-bracket"></i>
+                </button>
+            </div>
 
-  <div class="editor">
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-        <input type="text" id="note-title" placeholder="Заголовок...">
-        <button id="toggle-view" class="btn-toggle" onclick="toggleMode()">
-            <i class="fas fa-eye"></i>
-        </button>
-    </div> <div class="editor-container">
-        <textarea id="note-content" placeholder="Пиши Markdown тут..."></textarea>
-        <div id="note-preview" class="preview-area" style="display: none;"></div>
-    </div>
-        
-        <div class="button-group">
-            <button id="save-btn" class="btn btn-save" onclick="saveNote()">
-                <i class="fas fa-save"></i> Зберегти
-            </button>
-            <button id="delete-btn" class="btn btn-delete" onclick="deleteNote()">
-                <i class="fas fa-trash"></i> Видалити
-            </button>
-            <button id="photo-btn" class="btn btn-photo" onclick="takePhoto()">
-                <i class="fas fa-camera"></i> Фото
-            </button>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;">
-        </div>
-    </div>
-</div>
+            <div class="sidebar-actions">
+                <button class="primary-action" onclick="newNote()" title="Нова нотатка">
+                    <i class="fas fa-plus"></i>
+                    <span>Нова нотатка</span>
+                </button>
+            </div>
+
+            <div class="search-wrap">
+                <i class="fas fa-magnifying-glass"></i>
+                <input id="search-input" type="search" placeholder="Пошук" oninput="renderNoteList()">
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Усі</button>
+                <button class="filter-btn" data-filter="pinned" onclick="setFilter('pinned')">Закріплені</button>
+                <button class="filter-btn" data-filter="archive" onclick="setFilter('archive')">Архів</button>
+            </div>
+
+            <div id="tag-cloud" class="tag-cloud"></div>
+            <div id="notes-list" class="notes-list"></div>
+        </aside>
+
+        <section class="workspace">
+            <section class="editor-pane">
+                <div class="topbar">
+                    <input id="note-title" type="text" placeholder="Без назви" oninput="handleEditorInput()">
+                    <div class="mode-tabs" aria-label="Режим">
+                        <button id="mode-edit" onclick="setMode('edit')">Edit</button>
+                        <button id="mode-split" class="active" onclick="setMode('split')">Split</button>
+                        <button id="mode-preview" onclick="setMode('preview')">Preview</button>
+                    </div>
+                    <button id="pin-btn" class="icon-btn" onclick="togglePinned()" title="Закріпити" aria-label="Закріпити">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar" aria-label="Markdown toolbar">
+                    <button class="tool-btn" onclick="formatSelection('**', '**', 'жирний текст')" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button class="tool-btn" onclick="formatSelection('*', '*', 'курсив')" title="Italic"><i class="fas fa-italic"></i></button>
+                    <button class="tool-btn" onclick="insertLinePrefix('## ')" title="Heading"><i class="fas fa-heading"></i></button>
+                    <button class="tool-btn" onclick="insertLinePrefix('- [ ] ')" title="Task"><i class="fas fa-square-check"></i></button>
+                    <button class="tool-btn" onclick="formatSelection('[[', ']]', 'Нова нотатка')" title="Wiki link"><i class="fas fa-link"></i></button>
+                    <button class="tool-btn" onclick="formatSelection('`', '`', 'код')" title="Inline code"><i class="fas fa-code"></i></button>
+                    <button class="tool-btn" onclick="insertLinePrefix('> ')" title="Quote"><i class="fas fa-quote-left"></i></button>
+                    <button class="tool-btn" onclick="insertText('\n| Назва | Значення |\n| --- | --- |\n|  |  |\n')" title="Table"><i class="fas fa-table"></i></button>
+                    <button class="secondary-btn" onclick="dailyNote()"><i class="fas fa-calendar-day"></i>Сьогодні</button>
+                    <button id="save-note-btn" class="secondary-btn" onclick="saveNote()"><i class="fas fa-floppy-disk"></i>Зберегти</button>
+                    <button class="secondary-btn" onclick="exportMarkdown()"><i class="fas fa-file-export"></i>Export</button>
+                    <button class="secondary-btn" onclick="document.getElementById('import-input').click()"><i class="fas fa-file-import"></i>Import</button>
+                    <button class="secondary-btn" onclick="document.getElementById('image-input').click()"><i class="fas fa-image"></i>Фото</button>
+                    <button id="archive-btn" class="secondary-btn warn-btn" onclick="toggleArchive()"><i class="fas fa-box-archive"></i>Архів</button>
+                    <button class="secondary-btn danger-btn" onclick="deleteNote()"><i class="fas fa-trash"></i>Видалити</button>
+                    <input id="image-input" class="hidden" type="file" accept="image/*" onchange="uploadImage(event)">
+                    <input id="import-input" class="hidden" type="file" accept=".md,.markdown,.txt" onchange="importMarkdown(event)">
+                </div>
+
+                <div id="editor-body" class="editor-body split">
+                    <textarea id="note-content" placeholder="Markdown, #теги, [[зв'язки]]..." oninput="handleEditorInput()"></textarea>
+                    <article id="note-preview"></article>
+                </div>
+
+                <div class="statusbar">
+                    <span id="save-status">Готово</span>
+                    <span id="note-counts">0 слів · 0 символів</span>
+                </div>
+            </section>
+
+            <aside class="inspector">
+                <section class="inspector-section">
+                    <h2>Статистика</h2>
+                    <div class="stat-grid">
+                        <div class="stat"><strong id="stat-words">0</strong><span>Слів</span></div>
+                        <div class="stat"><strong id="stat-links">0</strong><span>Зв'язків</span></div>
+                        <div class="stat"><strong id="stat-tags">0</strong><span>Тегів</span></div>
+                        <div class="stat"><strong id="stat-updated">—</strong><span>Оновлено</span></div>
+                    </div>
+                </section>
+                <section class="inspector-section">
+                    <h2>Теги</h2>
+                    <div id="current-tags" class="tag-cloud" style="padding: 0;"></div>
+                </section>
+                <section class="inspector-section">
+                    <h2>Зв'язки</h2>
+                    <div id="outgoing-links" class="link-list"></div>
+                </section>
+                <section class="inspector-section">
+                    <h2>Backlinks</h2>
+                    <div id="backlinks" class="link-list"></div>
+                </section>
+                <section class="inspector-section">
+                    <h2>План</h2>
+                    <div id="outline" class="link-list"></div>
+                </section>
+            </aside>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
 
     <script>
         const API_URL = window.location.origin;
-        let isRegisterMode = false;
+        const tokenKey = "crossnotes-token";
+        let notes = [];
         let currentNoteId = null;
-        
+        let isRegisterMode = false;
+        let activeFilter = "all";
+        let selectedTag = null;
+        let currentMode = localStorage.getItem("crossnotes-mode") || "split";
+        let saveTimer = null;
+        let dirty = false;
+        let currentIsArchived = false;
 
-        window.onload = () => { if (localStorage.getItem('token')) showMain(); };
+        const els = {};
+        document.addEventListener("DOMContentLoaded", () => {
+            [
+                "auth-screen", "main-ui", "auth-title", "auth-btn", "auth-toggle", "username", "password",
+                "notes-list", "search-input", "tag-cloud", "note-title", "note-content", "note-preview",
+                "editor-body", "save-status", "note-counts", "pin-btn", "archive-btn", "current-tags",
+                "outgoing-links", "backlinks", "outline", "toast", "stat-words", "stat-links", "stat-tags", "stat-updated"
+            ].forEach(id => els[toCamel(id)] = document.getElementById(id));
+
+            setMode(currentMode);
+            if (localStorage.getItem(tokenKey)) {
+                showMain();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+                event.preventDefault();
+                saveNote();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
+                event.preventDefault();
+                newNote();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+                event.preventDefault();
+                els.searchInput.focus();
+            }
+        });
+
+        function toCamel(value) {
+            return value.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+        }
+
+        function token() {
+            return localStorage.getItem(tokenKey);
+        }
+
+        async function api(path, options = {}) {
+            const headers = options.headers || {};
+            if (!(options.body instanceof FormData)) {
+                headers["Content-Type"] = "application/json";
+            }
+            if (token()) {
+                headers.Authorization = "Bearer " + token();
+            }
+            const response = await fetch(API_URL + path, { ...options, headers });
+            const contentType = response.headers.get("content-type") || "";
+            const data = contentType.includes("application/json") ? await response.json() : null;
+            if (!response.ok) {
+                if (response.status === 401) logout();
+                throw new Error(data?.detail || "Помилка запиту");
+            }
+            return data;
+        }
+
+        function toast(message) {
+            els.toast.textContent = message;
+            els.toast.classList.add("show");
+            clearTimeout(toast.timer);
+            toast.timer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+        }
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
-            document.getElementById('auth-title').innerText = isRegisterMode ? "Реєстрація" : "Вхід";
-            document.getElementById('auth-btn').innerText = isRegisterMode ? "Створити акаунт" : "Увійти";
-            document.getElementById('auth-toggle').innerText = isRegisterMode ? "Вже є акаунт? Увійти" : "Немає акаунту? Реєстрація";
+            els.authTitle.textContent = isRegisterMode ? "Реєстрація" : "Вхід";
+            els.authBtn.textContent = isRegisterMode ? "Створити акаунт" : "Увійти";
+            els.authToggle.textContent = isRegisterMode ? "У мене вже є акаунт" : "Створити акаунт";
         }
 
-        async function handleAuth() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+        async function handleAuth(event) {
+            event.preventDefault();
+            const username = els.username.value.trim();
+            const password = els.password.value;
             const path = isRegisterMode ? "/register" : "/token";
-            const res = await fetch(API_URL + path, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass }) 
-            });
-            const data = await res.json();
-            if (res.ok) {
-                if (isRegisterMode) { alert("Успішно! Увійдіть."); toggleAuthMode(); }
-                else { localStorage.setItem('token', data.access_token); showMain(); }
-            } else { alert(data.detail || "Помилка"); }
+
+            try {
+                const data = await api(path, {
+                    method: "POST",
+                    body: JSON.stringify({ username, password })
+                });
+                if (isRegisterMode) {
+                    toast("Акаунт створено");
+                    toggleAuthMode();
+                    els.password.value = "";
+                    return;
+                }
+                localStorage.setItem(tokenKey, data.access_token);
+                showMain();
+            } catch (error) {
+                toast(error.message);
+            }
         }
 
-        function showMain() {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'flex';
+        function logout() {
+            localStorage.removeItem(tokenKey);
+            location.reload();
+        }
+
+        async function showMain() {
+            els.authScreen.style.display = "none";
+            els.mainUi.style.display = "flex";
+            await loadNotes();
+            if (!currentNoteId && notes.length) openNote(notes[0].id);
+        }
+
+        async function loadNotes() {
+            try {
+                const archived = activeFilter === "archive";
+                const data = await api(`/notes?archived=${archived}`);
+                notes = (data.notes || []).map(enrichNote);
+                renderTags();
+                renderNoteList();
+                updateInspector();
+            } catch (error) {
+                toast(error.message);
+            }
+        }
+
+        function enrichNote(note) {
+            const content = note.content || "";
+            return {
+                ...note,
+                title: note.title || "Без назви",
+                content,
+                tags: extractTags(content),
+                links: extractWikiLinks(content),
+                words: countWords(content),
+                excerpt: makeExcerpt(content)
+            };
+        }
+
+        function renderTags() {
+            const counts = new Map();
+            notes.forEach(note => note.tags.forEach(tag => counts.set(tag, (counts.get(tag) || 0) + 1)));
+            const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "uk"));
+            els.tagCloud.innerHTML = tags.map(([tag, count]) => (
+                `<button class="chip ${selectedTag === tag ? "active" : ""}" onclick='setTag(${jsArg(tag)})'>#${escapeHtml(tag)} <span>${count}</span></button>`
+            )).join("");
+        }
+
+        function renderNoteList() {
+            const query = els.searchInput.value.trim().toLowerCase();
+            const filtered = notes.filter(note => {
+                if (activeFilter === "pinned" && !note.is_pinned) return false;
+                if (selectedTag && !note.tags.includes(selectedTag)) return false;
+                if (!query) return true;
+                return [note.title, note.content, note.tags.join(" ")].join(" ").toLowerCase().includes(query);
+            });
+
+            els.notesList.innerHTML = filtered.map(note => `
+                <button class="note-item ${note.id === currentNoteId ? "active" : ""}" onclick="openNote(${note.id})">
+                    <span class="note-row">
+                        ${note.is_pinned ? '<i class="fas fa-thumbtack" style="color: var(--warn);"></i>' : ""}
+                        <span class="note-title">${escapeHtml(note.title)}</span>
+                    </span>
+                    <span class="note-excerpt">${escapeHtml(note.excerpt)}</span>
+                    <span class="note-meta">
+                        <span>${note.words} слів</span>
+                        <span>${formatDate(note.updated_at)}</span>
+                        ${note.tags.slice(0, 3).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("")}
+                    </span>
+                </button>
+            `).join("") || `<div class="empty-text" style="padding: 12px;">Немає нотаток</div>`;
+        }
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            selectedTag = null;
+            document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.filter === filter));
             loadNotes();
         }
 
-        function logout() { localStorage.removeItem('token'); location.reload(); }
-
-        async function loadNotes() {
-            const res = await fetch(API_URL + "/notes", {
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-            });
-            const data = await res.json();
-            const list = document.getElementById('notes-list');
-            list.innerHTML = '';
-            data.notes.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'note-item';
-                div.innerText = n.title || 'Без назви';
-                div.onclick = () => openNote(n);
-                list.appendChild(div);
-            });
+        function setTag(tag) {
+            selectedTag = selectedTag === tag ? null : tag;
+            activeFilter = "all";
+            document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.filter === "all"));
+            renderTags();
+            renderNoteList();
         }
 
-        function openNote(note) {
-            currentNoteId = note.id;
-            document.getElementById('note-title').value = note.title;
-            document.getElementById('note-content').value = note.content;
+        function currentPayload() {
+            return {
+                title: els.noteTitle.value.trim() || "Без назви",
+                content: els.noteContent.value,
+                is_pinned: els.pinBtn.classList.contains("active"),
+                is_archived: currentIsArchived
+            };
         }
 
         function newNote() {
-    currentNoteId = null; // Обов'язково!
-    document.getElementById('note-title').value = "";
-    document.getElementById('note-content').value = "";
-    updatePreview();
+            currentNoteId = null;
+            dirty = false;
+            currentIsArchived = false;
+            els.noteTitle.value = "";
+            els.noteContent.value = "";
+            els.pinBtn.classList.remove("active");
+            els.archiveBtn.innerHTML = '<i class="fas fa-box-archive"></i>Архів';
+            setSaveStatus("Нова нотатка");
+            updatePreview();
+            updateInspector();
+            renderNoteList();
+            els.noteTitle.focus();
         }
 
-     async function saveNote() {
-    const title = document.getElementById('note-title').value;
-    const content = document.getElementById('note-content').value;
-    const note = { title, content };
+        async function openNote(id) {
+            if (dirty) await saveNote({ silent: true });
+            const note = notes.find(item => item.id === id) || enrichNote(await api(`/notes/${id}`));
+            currentNoteId = note.id;
+            dirty = false;
+            currentIsArchived = Boolean(note.is_archived);
+            els.noteTitle.value = note.title;
+            els.noteContent.value = note.content;
+            els.pinBtn.classList.toggle("active", note.is_pinned);
+            els.archiveBtn.innerHTML = note.is_archived
+                ? '<i class="fas fa-box-open"></i>Повернути'
+                : '<i class="fas fa-box-archive"></i>Архів';
+            setSaveStatus("Готово");
+            updatePreview();
+            updateInspector();
+            renderNoteList();
+        }
 
-    // Визначаємо: якщо currentNoteId є — оновлюємо (PUT), якщо немає — створюємо (POST)
-    const url = currentNoteId ? `${API_URL}/notes/${currentNoteId}` : `${API_URL}/notes`;
-    const method = currentNoteId ? 'PUT' : 'POST';
+        function handleEditorInput() {
+            dirty = true;
+            updatePreview();
+            updateInspector();
+            scheduleSave();
+        }
 
-    await fetch(url, {
-        method: method,
-        headers: { 
-            'Content-Type': 'application/json', 
-            'Authorization': 'Bearer ' + localStorage.getItem('token') 
-        },
-        body: JSON.stringify(note)
-    });
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            setSaveStatus("Є зміни");
+            saveTimer = setTimeout(() => saveNote({ silent: true }), 900);
+        }
 
-    loadNotes(); // Оновлюємо список зліва
-    newNote();   // Очищаємо редактор та скидаємо currentNoteId
-}
+        async function saveNote({ silent = false } = {}) {
+            clearTimeout(saveTimer);
+            const payload = currentPayload();
+            if (!payload.title.trim() && !payload.content.trim()) return;
+
+            setSaveStatus("Збереження...");
+            try {
+                const saved = await api(currentNoteId ? `/notes/${currentNoteId}` : "/notes", {
+                    method: currentNoteId ? "PUT" : "POST",
+                    body: JSON.stringify(payload)
+                });
+                currentNoteId = saved.id;
+                const enriched = enrichNote(saved);
+                const index = notes.findIndex(note => note.id === saved.id);
+                if (index >= 0) notes[index] = enriched;
+                else notes.unshift(enriched);
+                dirty = false;
+                setSaveStatus("Збережено");
+                renderTags();
+                renderNoteList();
+                updateInspector();
+                if (!silent) toast("Нотатку збережено");
+            } catch (error) {
+                setSaveStatus("Не збережено");
+                if (!silent) toast(error.message);
+            }
+        }
 
         async function deleteNote() {
+            if (!currentNoteId) return newNote();
+            if (!confirm("Видалити нотатку назавжди?")) return;
+            try {
+                await api(`/notes/${currentNoteId}`, { method: "DELETE" });
+                notes = notes.filter(note => note.id !== currentNoteId);
+                toast("Нотатку видалено");
+                newNote();
+                renderTags();
+                renderNoteList();
+            } catch (error) {
+                toast(error.message);
+            }
+        }
+
+        async function togglePinned() {
+            els.pinBtn.classList.toggle("active");
+            await saveNote({ silent: true });
+        }
+
+        async function toggleArchive() {
             if (!currentNoteId) return;
-            await fetch(API_URL + "/notes/" + currentNoteId, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-            });
-            loadNotes();
+            const current = notes.find(note => note.id === currentNoteId);
+            if (!current) return;
+            current.is_archived = !current.is_archived;
+            currentIsArchived = current.is_archived;
+            els.archiveBtn.innerHTML = current.is_archived
+                ? '<i class="fas fa-box-open"></i>Повернути'
+                : '<i class="fas fa-box-archive"></i>Архів';
+            await saveNote({ silent: true });
+            notes = notes.filter(note => note.id !== currentNoteId);
+            toast(current.is_archived ? "Переміщено в архів" : "Повернуто з архіву");
             newNote();
+            loadNotes();
         }
 
-        const photoBtn = document.getElementById('photo-btn');
-const imageInput = document.getElementById('imageInput');
-
-// 1. При кліку на кнопку "Фото" відкриваємо вікно вибору файлу (або камеру на телефоні)
-photoBtn.onclick = function() {
-    imageInput.click();
-};
-
-// 2. Коли фото вибрано
-imageInput.onchange = function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        // Тут ми можемо або одразу завантажити на сервер, 
-        // або вставити посилання в текст нотатки
-        console.log("Фото вибрано:", file.name);
-        uploadImage(file); // Функція, яку ми напишемо далі
-    }
-};
-
-async function uploadImage(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-        const response = await fetch("/upload-image", {
-            method: "POST",
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            // Вставляємо шлях до картинки в Markdown форматі в текст нотатки
-            const content = document.getElementById('note-content');
-            content.value += `\n![image](${data.url})\n`;
-            alert("Фото завантажено!");
+        function setMode(mode) {
+            currentMode = mode;
+            localStorage.setItem("crossnotes-mode", mode);
+            if (!els.editorBody) return;
+            els.editorBody.className = `editor-body ${mode === "edit" ? "edit-only" : mode === "preview" ? "preview-only" : "split"}`;
+            els.noteContent.classList.toggle("hidden", mode === "preview");
+            els.notePreview.classList.toggle("hidden", mode === "edit");
+            document.querySelectorAll(".mode-tabs button").forEach(button => button.classList.toggle("active", button.id === `mode-${mode}`));
+            updatePreview();
         }
-    } catch (error) {
-        console.error("Помилка завантаження:", error);
-        alert("Не вдалося завантажити фото");
-    }
-    // Усередині функції uploadImage після вставки тексту:
-content.value += `\n![image](${data.url})\n`;
-updatePreview(); // Щоб картинка з'явилася миттєво без перезавантаження
-}
-            // Функція для оновлення прев'ю
-function updatePreview() {
-    const contentInput = document.getElementById('note-content');
-    const previewArea = document.getElementById('note-preview');
-    
-    if (contentInput && previewArea) {
-        // Отримуємо текст і конвертуємо його в HTML
-        const rawText = contentInput.value;
-        previewArea.innerHTML = marked.parse(rawText);
-    }
-}
 
-// Слухаємо введення тексту в реальному часі
-document.getElementById('note-content').addEventListener('input', updatePreview);
+        function formatSelection(before, after, fallback) {
+            const textarea = els.noteContent;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.slice(start, end) || fallback;
+            const next = before + selected + after;
+            textarea.setRangeText(next, start, end, "select");
+            textarea.focus();
+            handleEditorInput();
+        }
 
+        function insertLinePrefix(prefix) {
+            const textarea = els.noteContent;
+            const lineStart = textarea.value.lastIndexOf("\n", textarea.selectionStart - 1) + 1;
+            textarea.setRangeText(prefix, lineStart, lineStart, "end");
+            textarea.focus();
+            handleEditorInput();
+        }
 
-async function selectNote(id) {
-    currentNoteId = parseInt(id); // Запам'ятовуємо, що ми вибрали саме цю нотатку
-    
-    const response = await fetch(`${API_URL}/notes/${id}`, {
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-    });
-    const data = await response.json();
-    
-    document.getElementById('note-title').value = data.title;
-    document.getElementById('note-content').value = data.content;
-    updatePreview();
-}
+        function insertText(text) {
+            const textarea = els.noteContent;
+            textarea.setRangeText(text, textarea.selectionStart, textarea.selectionEnd, "end");
+            textarea.focus();
+            handleEditorInput();
+        }
 
-function toggleMode() {
-    const editor = document.getElementById('note-content');
-    const preview = document.getElementById('note-preview');
-    const btn = document.getElementById('toggle-view');
+        function updatePreview() {
+            const content = els.noteContent.value;
+            els.notePreview.innerHTML = renderMarkdown(content);
+            els.notePreview.querySelectorAll("a[href^='#wikilink-']").forEach(link => {
+                link.addEventListener("click", event => {
+                    event.preventDefault();
+                    openOrCreateByTitle(decodeURIComponent(link.getAttribute("href").replace("#wikilink-", "")));
+                });
+            });
+            updateCounts(content);
+        }
 
-    if (preview.style.display === 'none') {
-        // Вмикаємо режим перегляду
-        preview.style.display = 'block';
-        editor.style.display = 'none';
-        btn.innerHTML = '<i class="fas fa-edit"></i>'; // Міняємо око на олівець
-        btn.classList.add('active');
-        updatePreview(); // Оновлюємо вміст перед показом
-    } else {
-        // Повертаємося до редагування
-        preview.style.display = 'none';
-        editor.style.display = 'block';
-        btn.innerHTML = '<i class="fas fa-eye"></i>'; // Міняємо назад на око
-        btn.classList.remove('active');
-    }
-}
+        function renderMarkdown(source) {
+            const withWikiLinks = source.replace(/\[\[([^\]]+)\]\]/g, (_, title) => {
+                const clean = title.trim();
+                return `<a href="#wikilink-${encodeURIComponent(clean)}" class="wiki-link">[[${escapeHtml(clean)}]]</a>`;
+            });
+            if (window.marked?.parse) {
+                return marked.parse(withWikiLinks);
+            }
+            return fallbackMarkdown(withWikiLinks);
+        }
 
+        function fallbackMarkdown(source) {
+            return escapeHtml(source)
+                .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+                .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+                .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                .replace(/`([^`]+)`/g, "<code>$1</code>")
+                .replace(/\n/g, "<br>");
+        }
 
+        function updateCounts(content) {
+            const words = countWords(content);
+            const chars = content.length;
+            els.noteCounts.textContent = `${words} слів · ${chars} символів`;
+        }
+
+        function updateInspector() {
+            const content = els.noteContent.value || "";
+            const title = els.noteTitle.value.trim();
+            const tags = extractTags(content);
+            const links = extractWikiLinks(content);
+            const backlinks = title
+                ? notes.filter(note => note.id !== currentNoteId && note.links.some(link => link.toLowerCase() === title.toLowerCase()))
+                : [];
+            const outline = content.split("\n")
+                .map(line => line.match(/^(#{1,3})\s+(.+)/))
+                .filter(Boolean)
+                .map(match => ({ level: match[1].length, text: match[2] }));
+            const current = notes.find(note => note.id === currentNoteId);
+
+            els.statWords.textContent = countWords(content);
+            els.statLinks.textContent = links.length;
+            els.statTags.textContent = tags.length;
+            els.statUpdated.textContent = current?.updated_at ? formatDate(current.updated_at) : "—";
+            els.currentTags.innerHTML = tags.length
+                ? tags.map(tag => `<button class="chip" onclick='setTag(${jsArg(tag)})'>#${escapeHtml(tag)}</button>`).join("")
+                : `<span class="empty-text">—</span>`;
+            els.outgoingLinks.innerHTML = links.length
+                ? links.map(link => `<button class="link-button" onclick='openOrCreateByTitle(${jsArg(link)})'>[[${escapeHtml(link)}]]</button>`).join("")
+                : `<span class="empty-text">—</span>`;
+            els.backlinks.innerHTML = backlinks.length
+                ? backlinks.map(note => `<button class="link-button" onclick="openNote(${note.id})">${escapeHtml(note.title)}</button>`).join("")
+                : `<span class="empty-text">—</span>`;
+            els.outline.innerHTML = outline.length
+                ? outline.map(item => `<button class="link-button" onclick='jumpToHeading(${jsArg(item.text)})' style="padding-left: ${8 + item.level * 8}px;">${escapeHtml(item.text)}</button>`).join("")
+                : `<span class="empty-text">—</span>`;
+        }
+
+        async function openOrCreateByTitle(title) {
+            const existing = notes.find(note => note.title.toLowerCase() === title.toLowerCase());
+            if (existing) return openNote(existing.id);
+            if (dirty) await saveNote({ silent: true });
+            try {
+                const created = await api("/notes", {
+                    method: "POST",
+                    body: JSON.stringify({ title, content: "", is_pinned: false, is_archived: false })
+                });
+                notes.unshift(enrichNote(created));
+                renderNoteList();
+                openNote(created.id);
+            } catch (error) {
+                toast(error.message);
+            }
+        }
+
+        function jumpToHeading(text) {
+            const lines = els.noteContent.value.split("\n");
+            let position = 0;
+            for (const line of lines) {
+                if (line.replace(/^#{1,3}\s+/, "") === text) break;
+                position += line.length + 1;
+            }
+            setMode("edit");
+            els.noteContent.focus();
+            els.noteContent.setSelectionRange(position, position);
+        }
+
+        async function dailyNote() {
+            const date = new Date();
+            const iso = date.toISOString().slice(0, 10);
+            const title = `Щоденник ${iso}`;
+            const existing = notes.find(note => note.title === title);
+            if (existing) return openNote(existing.id);
+            if (dirty) await saveNote({ silent: true });
+            currentNoteId = null;
+            els.noteTitle.value = title;
+            els.noteContent.value = `# ${title}\n\n## Завдання\n- [ ] \n\n## Нотатки\n\n## Підсумок\n`;
+            handleEditorInput();
+            await saveNote();
+        }
+
+        async function uploadImage(event) {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (!file) return;
+            const formData = new FormData();
+            formData.append("file", file);
+            try {
+                const data = await api("/upload-image", { method: "POST", body: formData });
+                insertText(`\n![${file.name}](${data.url})\n`);
+                toast("Зображення додано");
+            } catch (error) {
+                toast(error.message);
+            }
+        }
+
+        function exportMarkdown() {
+            const title = safeFileName(els.noteTitle.value || "note");
+            const blob = new Blob([els.noteContent.value], { type: "text/markdown;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${title}.md`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importMarkdown(event) {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                currentNoteId = null;
+                els.noteTitle.value = file.name.replace(/\.(md|markdown|txt)$/i, "");
+                els.noteContent.value = reader.result || "";
+                handleEditorInput();
+                toast("Markdown імпортовано");
+            };
+            reader.readAsText(file);
+        }
+
+        function extractTags(content) {
+            return [...new Set([...(content || "").matchAll(/(^|\s)#([\p{L}\p{N}_/-]+)/gu)].map(match => match[2]))].sort((a, b) => a.localeCompare(b, "uk"));
+        }
+
+        function extractWikiLinks(content) {
+            return [...new Set([...(content || "").matchAll(/\[\[([^\]]+)\]\]/g)].map(match => match[1].trim()).filter(Boolean))];
+        }
+
+        function countWords(content) {
+            return ((content || "").trim().match(/[\p{L}\p{N}]+/gu) || []).length;
+        }
+
+        function makeExcerpt(content) {
+            return (content || "")
+                .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+                .replace(/[#>*_`\[\]\-]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+                .slice(0, 140) || "Порожня нотатка";
+        }
+
+        function formatDate(value) {
+            if (!value) return "—";
+            const date = new Date(value);
+            return date.toLocaleDateString("uk-UA", { day: "2-digit", month: "short" });
+        }
+
+        function setSaveStatus(value) {
+            els.saveStatus.textContent = value;
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            })[char]);
+        }
+
+        function jsArg(value) {
+            return escapeHtml(JSON.stringify(value));
+        }
+
+        function safeFileName(value) {
+            return value.trim().replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80) || "note";
+        }
     </script>
 </body>
 </html>
