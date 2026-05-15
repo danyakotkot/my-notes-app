@@ -76,9 +76,17 @@ def migrate_notes_table() -> None:
 
     migrations = []
     if "is_pinned" not in existing_columns:
-        migrations.append("ALTER TABLE notes ADD COLUMN is_pinned BOOLEAN DEFAULT 0 NOT NULL")
+        migrations.append(
+            "ALTER TABLE notes ADD COLUMN is_pinned BOOLEAN DEFAULT 0 NOT NULL"
+            if is_sqlite
+            else "ALTER TABLE notes ADD COLUMN is_pinned BOOLEAN DEFAULT FALSE NOT NULL"
+        )
     if "is_archived" not in existing_columns:
-        migrations.append("ALTER TABLE notes ADD COLUMN is_archived BOOLEAN DEFAULT 0 NOT NULL")
+        migrations.append(
+            "ALTER TABLE notes ADD COLUMN is_archived BOOLEAN DEFAULT 0 NOT NULL"
+            if is_sqlite
+            else "ALTER TABLE notes ADD COLUMN is_archived BOOLEAN DEFAULT FALSE NOT NULL"
+        )
     if "created_at" not in existing_columns:
         migrations.append("ALTER TABLE notes ADD COLUMN created_at DATETIME" if is_sqlite else "ALTER TABLE notes ADD COLUMN created_at TIMESTAMP")
     if "updated_at" not in existing_columns:
